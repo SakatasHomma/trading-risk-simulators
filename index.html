@@ -5,505 +5,529 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sakatas Homma — Trading Risk Simulators</title>
 <style>
-  :root{
-    --dark:#14171F;
-    --panel:#1C202B;
-    --panel-light:#F1F1F1;
-    --gold:#C9971F;
-    --gold-soft:#E4B94F;
-    --slate:#5B6472;
-    --light:#FFFFFF;
-    --red:#C13A28;
-    --green:#3A7D5C;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--dark);
-    color:var(--light);
-    font-family:Georgia,'Cambria',serif;
-    -webkit-font-smoothing:antialiased;
-  }
-  .sans{font-family:Arial,Helvetica,sans-serif;}
-  header{
-    padding:28px 40px 20px 40px;
-    border-bottom:1px solid #2A2F3B;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  header h1{
-    font-size:22px;
-    letter-spacing:0.5px;
-    margin:0;
-    font-weight:normal;
-  }
-  header h1 span{color:var(--gold);}
-  header .sub{
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:11px;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    color:var(--slate);
-    margin-top:4px;
-  }
-  nav{
-    display:flex;
-    gap:2px;
-    padding:0 40px;
-    background:var(--panel);
-    border-bottom:1px solid #2A2F3B;
-    overflow-x:auto;
-  }
-  nav button{
-    font-family:Arial,Helvetica,sans-serif;
-    background:none;
-    border:none;
-    color:var(--slate);
-    padding:16px 20px;
-    font-size:13px;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    cursor:pointer;
-    border-bottom:3px solid transparent;
-    white-space:nowrap;
-  }
-  nav button.active{
-    color:var(--gold-soft);
-    border-bottom:3px solid var(--gold);
-  }
-  nav button:hover{color:var(--light);}
-  main{padding:32px 40px 60px 40px; max-width:1400px; margin:0 auto;}
-  .panel{display:none;}
-  .panel.active{display:block;}
-  .grid{
-    display:grid;
-    grid-template-columns:340px 1fr;
-    gap:28px;
-    align-items:start;
-  }
-  @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
-  .card{
-    background:var(--panel);
-    border:1px solid #2A2F3B;
-    border-radius:10px;
-    padding:22px;
-  }
-  .card h2{
-    font-size:15px;
-    text-transform:uppercase;
-    letter-spacing:1.5px;
-    color:var(--gold-soft);
-    margin:0 0 18px 0;
-    font-family:Arial,Helvetica,sans-serif;
-    font-weight:normal;
-  }
-  .field{margin-bottom:16px;}
-  .field label{
-    display:flex;
-    justify-content:space-between;
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:12px;
-    color:#C7CCD6;
-    margin-bottom:6px;
-  }
-  .field label .val{color:var(--gold-soft); font-weight:bold;}
-  .field input[type="range"]{
-    width:100%;
-    accent-color:var(--gold);
-  }
-  .field input[type="number"], .field select{
-    width:100%;
-    padding:8px 10px;
-    background:#0F1219;
-    border:1px solid #333A48;
-    color:var(--light);
-    border-radius:6px;
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:13px;
-  }
-  .radio-row{display:flex; gap:10px;}
-  .radio-row label{
-    flex:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
-    padding:8px;
-    background:#0F1219;
-    border:1px solid #333A48;
-    border-radius:6px;
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:12px;
-    cursor:pointer;
-    text-align:center;
-  }
-  .radio-row input{accent-color:var(--gold);}
-  .btn{
-    width:100%;
-    padding:13px;
-    background:var(--gold);
-    color:var(--dark);
-    border:none;
-    border-radius:6px;
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:13px;
-    letter-spacing:1px;
-    text-transform:uppercase;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:6px;
-  }
-  .btn:hover{background:var(--gold-soft);}
-  .btn.secondary{
-    background:none;
-    border:1px solid var(--slate);
-    color:#C7CCD6;
-    margin-top:8px;
-  }
-  .btn.secondary:hover{border-color:var(--gold); color:var(--gold-soft);}
-  .stat-row{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:14px;
-    margin-bottom:20px;
-  }
-  .stat{
-    background:var(--panel);
-    border:1px solid #2A2F3B;
-    border-radius:10px;
-    padding:16px 18px;
-  }
-  .stat .label{
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:1.2px;
-    color:var(--slate);
-    margin-bottom:6px;
-  }
-  .stat .value{font-size:22px; color:var(--light);}
-  .stat .value.gold{color:var(--gold-soft);}
-  .stat .value.red{color:#E0655A;}
-  .stat .value.green{color:#5FAE85;}
-  .chart-wrap{
-    background:var(--panel);
-    border:1px solid #2A2F3B;
-    border-radius:10px;
-    padding:20px;
-    margin-bottom:20px;
-  }
-  .chart-wrap h3{
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:12px;
-    text-transform:uppercase;
-    letter-spacing:1.5px;
-    color:var(--slate);
-    margin:0 0 14px 0;
-  }
-  canvas{display:block; width:100%;}
-  table{width:100%; border-collapse:collapse; font-family:Arial,Helvetica,sans-serif; font-size:12.5px;}
-  th,td{padding:8px 10px; text-align:center; border-bottom:1px solid #2A2F3B;}
-  th{color:var(--slate); text-transform:uppercase; font-size:10.5px; letter-spacing:1px;}
-  td{color:#E4E7ED;}
-  tr.highlight td{background:rgba(201,151,31,0.12); color:var(--gold-soft); font-weight:bold;}
-  td.highlight, th.highlight{background:rgba(201,151,31,0.12); color:var(--gold-soft); font-weight:bold;}
-  .note{
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:12px;
-    color:var(--slate);
-    line-height:1.6;
-    background:#0F1219;
-    border-left:3px solid var(--gold);
-    padding:12px 16px;
-    border-radius:0 6px 6px 0;
-    margin-top:16px;
-  }
-  .note.warn{border-left-color:var(--red);}
-  .legend{
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:12px;
-    color:#C7CCD6;
-    line-height:1.7;
-    background:#0F1219;
-    border:1px solid #2A2F3B;
-    border-radius:8px;
-    padding:14px 18px;
-    margin-bottom:20px;
-  }
-  .legend b{color:var(--gold-soft);}
-  .audit{
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:13px;
-    line-height:1.7;
-    color:#C7CCD6;
-  }
-  .audit h3{color:var(--gold-soft); font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:22px;}
-  .audit .ok{color:#5FAE85;}
-  .audit .flag{color:#E0655A;}
-  footer{
-    text-align:center;
-    font-family:Arial,Helvetica,sans-serif;
-    font-size:10.5px;
-    color:var(--slate);
-    letter-spacing:1px;
-    padding:20px;
-  }
+:root{
+--dark:#14171F;
+--panel:#1C202B;
+--panel-light:#F1F1F1;
+--gold:#C9971F;
+--gold-soft:#E4B94F;
+--slate:#5B6472;
+--light:#FFFFFF;
+--red:#C13A28;
+--green:#3A7D5C;
+}
+*{box-sizing:border-box;}
+body{
+margin:0;
+background:var(--dark);
+color:var(--light);
+font-family:Georgia,'Cambria',serif;
+-webkit-font-smoothing:antialiased;
+}
+.sans{font-family:Arial,Helvetica,sans-serif;}
+header{
+padding:28px 40px 20px 40px;
+border-bottom:1px solid #2A2F3B;
+display:flex;
+align-items:center;
+justify-content:space-between;
+}
+header h1{
+font-size:22px;
+letter-spacing:0.5px;
+margin:0;
+font-weight:normal;
+}
+header h1 span{color:var(--gold);}
+header .sub{
+font-family:Arial,Helvetica,sans-serif;
+font-size:11px;
+letter-spacing:2px;
+text-transform:uppercase;
+color:var(--slate);
+margin-top:4px;
+}
+nav{
+display:flex;
+gap:2px;
+padding:0 40px;
+background:var(--panel);
+border-bottom:1px solid #2A2F3B;
+overflow-x:auto;
+}
+nav button{
+font-family:Arial,Helvetica,sans-serif;
+background:none;
+border:none;
+color:var(--slate);
+padding:16px 20px;
+font-size:13px;
+letter-spacing:1px;
+text-transform:uppercase;
+cursor:pointer;
+border-bottom:3px solid transparent;
+white-space:nowrap;
+}
+nav button.active{
+color:var(--gold-soft);
+border-bottom:3px solid var(--gold);
+}
+nav button:hover{color:var(--light);}
+main{padding:32px 40px 60px 40px; max-width:1400px; margin:0 auto;}
+.panel{display:none;}
+.panel.active{display:block;}
+.grid{
+display:grid;
+grid-template-columns:340px 1fr;
+gap:28px;
+align-items:start;
+}
+@media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+.card{
+background:var(--panel);
+border:1px solid #2A2F3B;
+border-radius:10px;
+padding:22px;
+}
+.card h2{
+font-size:15px;
+text-transform:uppercase;
+letter-spacing:1.5px;
+color:var(--gold-soft);
+margin:0 0 18px 0;
+font-family:Arial,Helvetica,sans-serif;
+font-weight:normal;
+}
+.field{margin-bottom:16px;}
+.field label{
+display:flex;
+justify-content:space-between;
+font-family:Arial,Helvetica,sans-serif;
+font-size:12px;
+color:#C7CCD6;
+margin-bottom:6px;
+}
+.field label .val{color:var(--gold-soft); font-weight:bold;}
+.field input[type="range"]{
+width:100%;
+accent-color:var(--gold);
+}
+.field input[type="number"], .field select{
+width:100%;
+padding:8px 10px;
+background:#0F1219;
+border:1px solid #333A48;
+color:var(--light);
+border-radius:6px;
+font-family:Arial,Helvetica,sans-serif;
+font-size:13px;
+}
+.radio-row{display:flex; gap:10px;}
+.radio-row label{
+flex:1;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+padding:8px;
+background:#0F1219;
+border:1px solid #333A48;
+border-radius:6px;
+font-family:Arial,Helvetica,sans-serif;
+font-size:12px;
+cursor:pointer;
+text-align:center;
+}
+.radio-row input{accent-color:var(--gold);}
+.btn{
+width:100%;
+padding:13px;
+background:var(--gold);
+color:var(--dark);
+border:none;
+border-radius:6px;
+font-family:Arial,Helvetica,sans-serif;
+font-size:13px;
+letter-spacing:1px;
+text-transform:uppercase;
+font-weight:bold;
+cursor:pointer;
+margin-top:6px;
+}
+.btn:hover{background:var(--gold-soft);}
+.btn.secondary{
+background:none;
+border:1px solid var(--slate);
+color:#C7CCD6;
+margin-top:8px;
+}
+.btn.secondary:hover{border-color:var(--gold); color:var(--gold-soft);}
+.stat-row{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+gap:14px;
+margin-bottom:20px;
+}
+.stat{
+background:var(--panel);
+border:1px solid #2A2F3B;
+border-radius:10px;
+padding:16px 18px;
+}
+.stat .label{
+font-family:Arial,Helvetica,sans-serif;
+font-size:10px;
+text-transform:uppercase;
+letter-spacing:1.2px;
+color:var(--slate);
+margin-bottom:6px;
+}
+.stat .value{font-size:22px; color:var(--light);}
+.stat .value.gold{color:var(--gold-soft);}
+.stat .value.red{color:#E0655A;}
+.stat .value.green{color:#5FAE85;}
+.stat .value.slate{color:var(--slate);}
+.chart-wrap{
+background:var(--panel);
+border:1px solid #2A2F3B;
+border-radius:10px;
+padding:20px;
+margin-bottom:20px;
+}
+.chart-wrap h3{
+font-family:Arial,Helvetica,sans-serif;
+font-size:12px;
+text-transform:uppercase;
+letter-spacing:1.5px;
+color:var(--slate);
+margin:0 0 14px 0;
+}
+canvas{display:block; width:100%;}
+table{width:100%; border-collapse:collapse; font-family:Arial,Helvetica,sans-serif; font-size:12.5px;}
+th,td{padding:8px 10px; text-align:center; border-bottom:1px solid #2A2F3B;}
+th{color:var(--slate); text-transform:uppercase; font-size:10.5px; letter-spacing:1px;}
+td{color:#E4E7ED;}
+tr.highlight td{background:rgba(201,151,31,0.12); color:var(--gold-soft); font-weight:bold;}
+td.highlight, th.highlight{background:rgba(201,151,31,0.12); color:var(--gold-soft); font-weight:bold;}
+.note{
+font-family:Arial,Helvetica,sans-serif;
+font-size:12px;
+color:var(--slate);
+line-height:1.6;
+background:#0F1219;
+border-left:3px solid var(--gold);
+padding:12px 16px;
+border-radius:0 6px 6px 0;
+margin-top:16px;
+}
+.note.warn{border-left-color:var(--red);}
+.legend{
+font-family:Arial,Helvetica,sans-serif;
+font-size:12px;
+color:#C7CCD6;
+line-height:1.7;
+background:#0F1219;
+border:1px solid #2A2F3B;
+border-radius:8px;
+padding:14px 18px;
+margin-bottom:20px;
+}
+.legend b{color:var(--gold-soft);}
+.audit{
+font-family:Arial,Helvetica,sans-serif;
+font-size:13px;
+line-height:1.7;
+color:#C7CCD6;
+}
+.audit h3{color:var(--gold-soft); font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:22px;}
+.audit .ok{color:#5FAE85;}
+.audit .flag{color:#E0655A;}
+footer{
+text-align:center;
+font-family:Arial,Helvetica,sans-serif;
+font-size:10.5px;
+color:var(--slate);
+letter-spacing:1px;
+padding:20px;
+}
 </style>
 </head>
 <body>
 
 <header>
-  <div>
-    <h1>Sakatas Homma <span>Trading Systems</span></h1>
-    <div class="sub">Risk &amp; Position Sizing Simulators</div>
-  </div>
+<div>
+<h1>Sakatas Homma <span>Trading Systems</span></h1>
+<div class="sub">Risk &amp; Position Sizing Simulators</div>
+</div>
 </header>
 
 <nav class="sans">
-  <button class="active" data-panel="mc">Monte Carlo Simulator</button>
-  <button data-panel="maxloss">Max Loss Simulator</button>
-  <button data-panel="kelly">Kelly Size / Risk Simulator</button>
-  <button data-panel="ruin">Risk of Ruin Simulator</button>
+<button class="active" data-panel="mc">Monte Carlo Simulator</button>
+<button data-panel="maxloss">Max Loss Simulator</button>
+<button data-panel="kelly">Kelly Size / Risk Simulator</button>
+<button data-panel="ruin">Risk of Ruin Simulator</button>
 </nav>
 
 <main>
 
-  <!-- ================= MONTE CARLO PANEL ================= -->
-  <section class="panel active" id="mc">
-    <div class="grid">
-      <div class="card">
-        <h2>Inputs</h2>
-        <div class="field">
-          <label>Win Probability <span class="val" id="mc_p_val">30%</span></label>
-          <input type="range" id="mc_p" min="5" max="80" value="30">
-        </div>
-        <div class="field">
-          <label>Sizing Model</label>
-          <div class="radio-row">
-            <label><input type="radio" name="mc_mode" value="fixed" checked> Fixed $</label>
-            <label><input type="radio" name="mc_mode" value="percent"> % of Equity</label>
-          </div>
-        </div>
-        <div id="mc_fixed_inputs">
-          <div class="field"><label>Avg Win ($)</label><input type="number" id="mc_win_amt" value="600"></div>
-          <div class="field"><label>Avg Loss ($, negative)</label><input type="number" id="mc_loss_amt" value="-200"></div>
-          <div class="field"><label>Commission/Trade ($, negative)</label><input type="number" id="mc_comm" value="-20"></div>
-        </div>
-        <div id="mc_percent_inputs" style="display:none;">
-          <div class="field">
-            <label>Risk per Trade <span class="val" id="mc_risk_val">1.0%</span></label>
-            <input type="range" id="mc_risk" min="0.1" max="10" step="0.1" value="1.0">
-          </div>
-          <div class="field">
-            <label>Reward:Risk (R multiple) <span class="val" id="mc_rr_val">3.0R</span></label>
-            <input type="range" id="mc_rr" min="0.5" max="10" step="0.5" value="3.0">
-          </div>
-        </div>
-        <div class="field"><label>Starting Capital ($)</label><input type="number" id="mc_start" value="10000"></div>
+<!-- ================= MONTE CARLO PANEL ================= -->
+<section class="panel active" id="mc">
+<div class="grid">
+<div class="card">
+<h2>Inputs</h2>
+<div class="field">
+<label>Win Probability <span class="val" id="mc_p_val">30%</span></label>
+<input type="range" id="mc_p" min="5" max="80" value="30">
+</div>
+<div class="field">
+<label>Sizing Model</label>
+<div class="radio-row">
+<label><input type="radio" name="mc_mode" value="fixed" checked> Fixed $</label>
+<label><input type="radio" name="mc_mode" value="percent"> % of Equity</label>
+</div>
+</div>
+<div id="mc_fixed_inputs">
+<div class="field"><label>Avg Win ($)</label><input type="number" id="mc_win_amt" value="600"></div>
+<div class="field"><label>Avg Loss ($, negative)</label><input type="number" id="mc_loss_amt" value="-200"></div>
+<div class="field"><label>Commission/Trade ($, negative)</label><input type="number" id="mc_comm" value="-20"></div>
+</div>
+<div id="mc_percent_inputs" style="display:none;">
+<div class="field">
+<label>Risk per Trade <span class="val" id="mc_risk_val">1.0%</span></label>
+<input type="range" id="mc_risk" min="0.1" max="10" step="0.1" value="1.0">
+</div>
+<div class="field">
+<label>Reward:Risk (R multiple) <span class="val" id="mc_rr_val">3.0R</span></label>
+<input type="range" id="mc_rr" min="0.5" max="10" step="0.5" value="3.0">
+</div>
+<div class="field">
+<label>Charges per Trade <span class="val" id="mc_charge_val">0.08%</span></label>
+<input type="range" id="mc_charge" min="0" max="1" step="0.01" value="0.08">
+</div>
+<div class="note" style="margin-top:0;">Round-trip cost (brokerage + STT + exchange/SEBI charges + stamp duty + GST), deducted from equity on every position regardless of win or loss — modeled on published Zerodha/Fyers discount-broker rate cards for intraday equity (≈0.08% of position value per round-trip). Adjust for delivery, F&amp;O, or a different broker.</div>
+</div>
+<div class="field"><label>Starting Capital ($)</label><input type="number" id="mc_start" value="10000"></div>
 
-        <div class="field"><label>Concurrent Positions (K)</label><input type="number" id="mc_k" value="1" min="1" max="20"></div>
-        <div id="mc_corr_wrap" style="display:none;">
-          <div class="field">
-            <label>Correlation Between Positions <span class="val" id="mc_rho_val">0%</span></label>
-            <input type="range" id="mc_rho" min="0" max="100" step="5" value="0">
-          </div>
-          <div class="note" style="margin-top:0;">0% = each position is an independent bet (diversification helps).
-          100% = all K positions move together, i.e. it behaves like one single bet sized at K × your per-position risk.
-          Positions from the same breadth/RS-driven setup in the same market regime are realistically well above 0%.</div>
-        </div>
+<div class="field"><label>Concurrent Positions (K)</label><input type="number" id="mc_k" value="1" min="1" max="20"></div>
+<div id="mc_corr_wrap" style="display:none;">
+<div class="field">
+<label>Correlation Between Positions <span class="val" id="mc_rho_val">0%</span></label>
+<input type="range" id="mc_rho" min="0" max="100" step="5" value="0">
+</div>
+<div class="note" style="margin-top:0;">0% = each position is an independent bet (diversification helps).
+100% = all K positions move together, i.e. it behaves like one single bet sized at K × your per-position risk.
+Positions from the same breadth/RS-driven setup in the same market regime are realistically well above 0%.</div>
+</div>
 
-        <div class="field">
-          <label>Simulation Goal</label>
-          <div class="radio-row">
-            <label><input type="radio" name="mc_goal" value="trades" checked> Fixed # of Trades</label>
-            <label><input type="radio" name="mc_goal" value="multiple"> Reach Target Multiple</label>
-          </div>
-        </div>
-        <div id="mc_goal_trades">
-          <div class="field"><label id="mc_n_label">Number of Trades</label><input type="number" id="mc_n" value="365"></div>
-        </div>
-        <div id="mc_goal_multiple" style="display:none;">
-          <div class="field"><label>Target Multiple (e.g. 2 = double)</label><input type="number" id="mc_target" value="2" step="0.5" min="1.1"></div>
-          <div class="field"><label id="mc_cap_label">Max Trades Cap (safety limit)</label><input type="number" id="mc_cap" value="2000"></div>
-        </div>
+<div class="field">
+<label>Simulation Goal</label>
+<div class="radio-row">
+<label><input type="radio" name="mc_goal" value="trades" checked> Fixed # of Trades</label>
+<label><input type="radio" name="mc_goal" value="multiple"> Reach Target Multiple</label>
+</div>
+</div>
+<div id="mc_goal_trades">
+<div class="field"><label id="mc_n_label">Number of Trades</label><input type="number" id="mc_n" value="365"></div>
+</div>
+<div id="mc_goal_multiple" style="display:none;">
+<div class="field"><label>Target Multiple (e.g. 2 = double)</label><input type="number" id="mc_target" value="2" step="0.5" min="1.1"></div>
+<div class="field"><label id="mc_cap_label">Max Trades Cap (safety limit)</label><input type="number" id="mc_cap" value="2000"></div>
+</div>
 
-        <h2 style="margin-top:22px;">Time Estimate</h2>
-        <div class="field"><label>Avg Days Held — Winners (trading days)</label><input type="number" id="mc_win_days" value="25" min="1"></div>
-        <div class="field"><label>Avg Days Held — Losers (trading days)</label><input type="number" id="mc_loss_days" value="5" min="1"></div>
-        <div class="field"><label>Idle Days Between Rounds</label><input type="number" id="mc_idle_days" value="2" min="0"></div>
-        <div class="note" style="margin-top:0;">Converts trade/round count into calendar time. With K concurrent
-        positions, holding-day workload is spread across K parallel slots (more positions at once ≈ faster throughput,
-        not longer waits). Trading days are converted to calendar days at 7/5 (weekends only, holidays ignored) — a
-        rough estimate, since it assumes a steady flow of qualifying setups with no dry spells beyond the idle-days input.</div>
+<h2 style="margin-top:22px;">Time Estimate</h2>
+<div class="field">
+<label>Trade Style</label>
+<div class="radio-row">
+<label><input type="radio" name="mc_style" value="swing" checked> Swing / Positional</label>
+<label><input type="radio" name="mc_style" value="intraday"> Intraday</label>
+</div>
+</div>
+<div id="mc_swing_time_inputs">
+<div class="field"><label>Avg Days Held — Winners (trading days)</label><input type="number" id="mc_win_days" value="25" min="1"></div>
+<div class="field"><label>Avg Days Held — Losers (trading days)</label><input type="number" id="mc_loss_days" value="5" min="1"></div>
+<div class="field"><label>Idle Days Between Rounds</label><input type="number" id="mc_idle_days" value="2" min="0"></div>
+</div>
+<div id="mc_intraday_time_inputs" style="display:none;">
+<div class="field"><label>Max Intraday Trades per Day</label><input type="number" id="mc_max_per_day" value="3" min="1"></div>
+</div>
+<div class="note" style="margin-top:0;">Converts trade/round count into calendar time. Swing/Positional mode spreads
+each position's holding-day workload across K parallel slots (more positions at once ≈ faster throughput, not
+longer waits), then adds idle days between rounds. Intraday mode instead caps how many rounds can close out per
+trading day (Max Intraday Trades per Day), since every position opens and closes the same day. Trading days convert
+to calendar days at 7/5 (weekends only, holidays ignored) — a rough estimate either way, since it assumes a steady
+flow of qualifying setups.</div>
 
-        <button class="btn" onclick="runSingleMC()">Run 1 Simulation</button>
-        <button class="btn secondary" onclick="runBatchMC()">Run 500 Simulations</button>
-      </div>
+<button class="btn" onclick="runSingleMC()">Run 1 Simulation</button>
+<button class="btn secondary" onclick="runBatchMC()">Run 500 Simulations</button>
+</div>
 
-      <div>
-        <div class="legend">
-          <b>What you're looking at:</b> Final Net P&amp;L / Equity is where the account ends up. Peak / Trough are the
-          highest and lowest account value reached along the way. Max Drawdown is the worst peak-to-trough decline (%).
-          Realized Win Rate is the actual win rate that happened in this particular random run — it won't exactly match
-          your input, since each run is random. Best Win Streak / Worst Loss Streak are the longest runs of consecutive
-          rounds that net out as a win or loss (with K&gt;1, a "round" = all K concurrent positions opened together).
-          In <b>Target Multiple</b> mode, "Trades to Reach {X}×" tells you how many trades it took the simulated account
-          to hit your target — run 500 Simulations to see the typical (median) and best/worst-case trade count, since
-          this varies a lot run to run. <b>Estimated Duration</b> turns that trade count into real calendar time, using
-          your Avg Days Held inputs — this is what actually tells you "how many months/years" the system needs, since
-          trade count alone says nothing about speed.
-        </div>
-        <div class="stat-row" id="mc_stats"></div>
-        <div class="chart-wrap">
-          <h3 id="mc_chart_title">Equity Curve — Single Run</h3>
-          <canvas id="mc_chart" data-h="320"></canvas>
-        </div>
-        <div class="chart-wrap" id="mc_batch_wrap" style="display:none;">
-          <h3 id="mc_batch_title">500-Simulation Summary (Max / Average / Min)</h3>
-          <table id="mc_batch_table"></table>
-          <div class="note" id="mc_batch_note" style="display:none;"></div>
-        </div>
-      </div>
-    </div>
-  </section>
+<div>
+<div class="legend">
+<b>What you're looking at:</b> Final Net P&amp;L / Equity is where the account ends up. Peak / Trough are the
+highest and lowest account value reached along the way. Max Drawdown is the worst peak-to-trough decline (%).
+Realized Win Rate is the actual win rate that happened in this particular random run — it won't exactly match
+your input, since each run is random. Best Win Streak / Worst Loss Streak are the longest runs of consecutive
+rounds that net out as a win or loss (with K&gt;1, a "round" = all K concurrent positions opened together).
+In <b>Target Multiple</b> mode, "Trades to Reach {X}×" tells you how many trades it took the simulated account
+to hit your target — run 500 Simulations to see the typical (median) and best/worst-case trade count, since
+this varies a lot run to run. <b>Estimated Duration</b> turns that trade count into real calendar time, using
+your Time Estimate inputs — this is what actually tells you "how many months/years" the system needs, since
+trade count alone says nothing about speed. <b>Conclusion</b> is a qualitative read on this run's annualized
+result (CAGR), from Highly Profitable down to Loss-Making.
+</div>
+<div class="stat-row" id="mc_stats"></div>
+<div class="chart-wrap">
+<h3 id="mc_chart_title">Equity Curve — Single Run</h3>
+<canvas id="mc_chart" data-h="320"></canvas>
+</div>
+<div class="chart-wrap" id="mc_batch_wrap" style="display:none;">
+<h3 id="mc_batch_title">500-Simulation Summary (Max / Average / Min)</h3>
+<div class="stat-row" id="mc_batch_verdict_row" style="margin-bottom:14px;"></div>
+<table id="mc_batch_table"></table>
+<div class="note" id="mc_batch_note" style="display:none;"></div>
+</div>
+</div>
+</div>
+</section>
 
-  <!-- ================= MAX LOSS PANEL ================= -->
-  <section class="panel" id="maxloss">
-    <div class="grid">
-      <div class="card">
-        <h2>Inputs</h2>
-        <div class="field">
-          <label>Win Probability <span class="val" id="ml_p_val">30%</span></label>
-          <input type="range" id="ml_p" min="5" max="80" value="30">
-        </div>
-        <div class="field">
-          <label>Reward:Risk (R multiple) <span class="val" id="ml_rr_val">3.0R</span></label>
-          <input type="range" id="ml_rr" min="0.5" max="10" step="0.5" value="3.0">
-        </div>
-        <div class="field">
-          <label>Risk per Trade <span class="val" id="ml_risk_val">1.0%</span></label>
-          <input type="range" id="ml_risk" min="0.1" max="10" step="0.1" value="1.0">
-        </div>
-        <div class="field"><label>Number of Trades per Run</label><input type="number" id="ml_n" value="100"></div>
-        <div class="field"><label>Number of Simulated Runs</label><input type="number" id="ml_sims" value="2000"></div>
-        <button class="btn" onclick="runMaxLoss()">Run Simulation</button>
-        <div class="note">Shows the distribution of <strong>maximum drawdown</strong> (peak-to-trough, % of equity) across many simulated runs — not just one lucky or unlucky path. The tail of this distribution is what "risk of ruin" is built from.</div>
-      </div>
+<!-- ================= MAX LOSS PANEL ================= -->
+<section class="panel" id="maxloss">
+<div class="grid">
+<div class="card">
+<h2>Inputs</h2>
+<div class="field">
+<label>Win Probability <span class="val" id="ml_p_val">30%</span></label>
+<input type="range" id="ml_p" min="5" max="80" value="30">
+</div>
+<div class="field">
+<label>Reward:Risk (R multiple) <span class="val" id="ml_rr_val">3.0R</span></label>
+<input type="range" id="ml_rr" min="0.5" max="10" step="0.5" value="3.0">
+</div>
+<div class="field">
+<label>Risk per Trade <span class="val" id="ml_risk_val">1.0%</span></label>
+<input type="range" id="ml_risk" min="0.1" max="10" step="0.1" value="1.0">
+</div>
+<div class="field"><label>Number of Trades per Run</label><input type="number" id="ml_n" value="100"></div>
+<div class="field"><label>Number of Simulated Runs</label><input type="number" id="ml_sims" value="2000"></div>
+<button class="btn" onclick="runMaxLoss()">Run Simulation</button>
+<div class="note">Shows the distribution of <strong>maximum drawdown</strong> (peak-to-trough, % of equity) across many simulated runs — not just one lucky or unlucky path. The tail of this distribution is what "risk of ruin" is built from.</div>
+</div>
 
-      <div>
-        <div class="legend">
-          <b>What you're looking at:</b> each simulated run has its own worst peak-to-trough decline (its "max drawdown").
-          The bars show how often each drawdown level occurred across all the runs. Median is the typical case; the 90th
-          and 99th percentile numbers tell you "in the worst 10% (or 1%) of outcomes, drawdown was at least this deep" —
-          useful for sizing a risk level you can actually survive.
-        </div>
-        <div class="stat-row" id="ml_stats"></div>
-        <div class="chart-wrap">
-          <h3>Distribution of Max Drawdown Across Runs</h3>
-          <canvas id="ml_chart" data-h="320"></canvas>
-        </div>
-      </div>
-    </div>
-  </section>
+<div>
+<div class="legend">
+<b>What you're looking at:</b> each simulated run has its own worst peak-to-trough decline (its "max drawdown").
+The bars show how often each drawdown level occurred across all the runs. Median is the typical case; the 90th
+and 99th percentile numbers tell you "in the worst 10% (or 1%) of outcomes, drawdown was at least this deep" —
+useful for sizing a risk level you can actually survive. Conclusion is a qualitative read on the median run's
+total return over the n trades simulated.
+</div>
+<div class="stat-row" id="ml_stats"></div>
+<div class="chart-wrap">
+<h3>Distribution of Max Drawdown Across Runs</h3>
+<canvas id="ml_chart" data-h="320"></canvas>
+</div>
+</div>
+</div>
+</section>
 
-  <!-- ================= KELLY PANEL ================= -->
-  <section class="panel" id="kelly">
-    <div class="grid">
-      <div class="card">
-        <h2>Inputs</h2>
-        <div class="field">
-          <label>Win Probability <span class="val" id="k_p_val">30%</span></label>
-          <input type="range" id="k_p" min="5" max="80" value="30">
-        </div>
-        <div class="field">
-          <label>Reward:Risk (R multiple, b) <span class="val" id="k_b_val">3.0R</span></label>
-          <input type="range" id="k_b" min="0.5" max="10" step="0.5" value="3.0">
-        </div>
-        <div class="field">
-          <label>Kelly Fraction Used <span class="val" id="k_frac_val">100%</span></label>
-          <input type="range" id="k_frac" min="10" max="100" step="5" value="25">
-        </div>
-        <button class="btn" onclick="runKelly()">Calculate</button>
-        <div class="note">Full Kelly maximizes long-run geometric growth but comes with brutal drawdowns. Most professional traders run at <strong>1/4 to 1/2 Kelly</strong> — the growth rate barely suffers, but the ride is far smoother.</div>
-      </div>
+<!-- ================= KELLY PANEL ================= -->
+<section class="panel" id="kelly">
+<div class="grid">
+<div class="card">
+<h2>Inputs</h2>
+<div class="field">
+<label>Win Probability <span class="val" id="k_p_val">30%</span></label>
+<input type="range" id="k_p" min="5" max="80" value="30">
+</div>
+<div class="field">
+<label>Reward:Risk (R multiple, b) <span class="val" id="k_b_val">3.0R</span></label>
+<input type="range" id="k_b" min="0.5" max="10" step="0.5" value="3.0">
+</div>
+<div class="field">
+<label>Kelly Fraction Used <span class="val" id="k_frac_val">100%</span></label>
+<input type="range" id="k_frac" min="10" max="100" step="5" value="25">
+</div>
+<button class="btn" onclick="runKelly()">Calculate</button>
+<div class="note">Full Kelly maximizes long-run geometric growth but comes with brutal drawdowns. Most professional traders run at <strong>1/4 to 1/2 Kelly</strong> — the growth rate barely suffers, but the ride is far smoother.</div>
+</div>
 
-      <div>
-        <div class="legend">
-          <b>What you're looking at:</b> the curve is your expected long-run compounding growth rate at each risk level.
-          It peaks at Full Kelly %, and turns negative (losing money over time) past the Zero-Growth Boundary. Edge per
-          Trade is your statistical advantage per trade in R-multiples — if it's negative, no position size saves you.
-        </div>
-        <div class="stat-row" id="k_stats"></div>
-        <div class="chart-wrap">
-          <h3>Expected Geometric Growth Rate vs. Risk per Trade</h3>
-          <canvas id="k_chart" data-h="340"></canvas>
-        </div>
-      </div>
-    </div>
-  </section>
+<div>
+<div class="legend">
+<b>What you're looking at:</b> the curve is your expected long-run compounding growth rate at each risk level.
+It peaks at Full Kelly %, and turns negative (losing money over time) past the Zero-Growth Boundary. Edge per
+Trade is your statistical advantage per trade in R-multiples — if it's negative, no position size saves you.
+Conclusion is a qualitative read on compounding at your chosen fraction of Kelly over a 100-trade horizon.
+</div>
+<div class="stat-row" id="k_stats"></div>
+<div class="chart-wrap">
+<h3>Expected Geometric Growth Rate vs. Risk per Trade</h3>
+<canvas id="k_chart" data-h="340"></canvas>
+</div>
+</div>
+</div>
+</section>
 
-  <!-- ================= RISK OF RUIN PANEL ================= -->
-  <section class="panel" id="ruin">
-    <div class="grid">
-      <div class="card">
-        <h2>Inputs</h2>
-        <div class="field">
-          <label>Win Probability <span class="val" id="r_p_val">30%</span></label>
-          <input type="range" id="r_p" min="5" max="80" value="30">
-        </div>
-        <div class="field">
-          <label>Consecutive Losses (X) <span class="val" id="r_x_val">8</span></label>
-          <input type="range" id="r_x" min="2" max="20" value="8">
-        </div>
-        <div class="field"><label>Number of Trades (N)</label><input type="number" id="r_n" value="100"></div>
-        <div class="field">
-          <label>Risk per Trade <span class="val" id="r_risk_val">1.0%</span></label>
-          <input type="range" id="r_risk" min="0.1" max="10" step="0.1" value="1.0">
-        </div>
-        <button class="btn" onclick="runRuin()">Calculate</button>
-        <div class="note">"Risk of ruin" here = probability that a losing streak of length X occurs at least once within N trades (exact Markov-chain calculation, verified against 200,000-trial Monte Carlo), cross-referenced against the drawdown that streak would produce at your chosen risk per trade. This exact method assumes one trade at a time.</div>
+<!-- ================= RISK OF RUIN PANEL ================= -->
+<section class="panel" id="ruin">
+<div class="grid">
+<div class="card">
+<h2>Inputs</h2>
+<div class="field">
+<label>Win Probability <span class="val" id="r_p_val">30%</span></label>
+<input type="range" id="r_p" min="5" max="80" value="30">
+</div>
+<div class="field">
+<label>Consecutive Losses (X) <span class="val" id="r_x_val">8</span></label>
+<input type="range" id="r_x" min="2" max="20" value="8">
+</div>
+<div class="field"><label>Number of Trades (N)</label><input type="number" id="r_n" value="100"></div>
+<div class="field">
+<label>Risk per Trade <span class="val" id="r_risk_val">1.0%</span></label>
+<input type="range" id="r_risk" min="0.1" max="10" step="0.1" value="1.0">
+</div>
+<button class="btn" onclick="runRuin()">Calculate</button>
+<div class="note">"Risk of ruin" here = probability that a losing streak of length X occurs at least once within N trades (exact Markov-chain calculation, verified against 200,000-trial Monte Carlo), cross-referenced against the drawdown that streak would produce at your chosen risk per trade. This exact method assumes one trade at a time.</div>
 
-        <h2 style="margin-top:26px;">Concurrent Positions</h2>
-        <div class="field"><label>Concurrent Positions (K)</label><input type="number" id="rc_k" value="1" min="1" max="20"></div>
-        <div class="field"><label>Reward:Risk (R multiple)</label><input type="range" id="rc_rr" min="0.5" max="10" step="0.5" value="4"></div>
-        <div class="field">
-          <label>Correlation Between Positions <span class="val" id="rc_rho_val">0%</span></label>
-          <input type="range" id="rc_rho" min="0" max="100" step="5" value="0">
-        </div>
-        <div class="field"><label>Ruin = Drawdown of at Least</label><input type="number" id="rc_thresh" value="50" min="1" max="99"><span style="font-size:11px;color:var(--slate)">%</span></div>
-        <button class="btn secondary" onclick="runConcurrentRuin()">Run Monte Carlo (2000 paths)</button>
-        <div class="note">With K&gt;1 there's no exact formula (positions can be correlated in arbitrarily complex ways), so this runs a Monte Carlo using the same one-factor correlation model as the Monte Carlo Simulator tab.</div>
-      </div>
+<h2 style="margin-top:26px;">Concurrent Positions</h2>
+<div class="field"><label>Concurrent Positions (K)</label><input type="number" id="rc_k" value="1" min="1" max="20"></div>
+<div class="field"><label>Reward:Risk (R multiple)</label><input type="range" id="rc_rr" min="0.5" max="10" step="0.5" value="4"></div>
+<div class="field">
+<label>Correlation Between Positions <span class="val" id="rc_rho_val">0%</span></label>
+<input type="range" id="rc_rho" min="0" max="100" step="5" value="0">
+</div>
+<div class="field"><label>Ruin = Drawdown of at Least</label><input type="number" id="rc_thresh" value="50" min="1" max="99"><span style="font-size:11px;color:var(--slate)">%</span></div>
+<button class="btn secondary" onclick="runConcurrentRuin()">Run Monte Carlo (2000 paths)</button>
+<div class="note">With K&gt;1 there's no exact formula (positions can be correlated in arbitrarily complex ways), so this runs a Monte Carlo using the same one-factor correlation model as the Monte Carlo Simulator tab.</div>
+</div>
 
-      <div>
-        <div class="legend">
-          <b>What you're looking at:</b> P(...) is the exact probability, given your win rate, that a losing streak of
-          the length you specified happens at least once within your trade horizon. The bar chart sweeps that across
-          win rates so you can see how much streak risk drops as edge improves. The sweep table converts the streak
-          into an actual account drawdown % at different risk-per-trade levels, so you can see which risk levels are
-          survivable versus account-blowing. The Concurrent Positions section below answers the question directly:
-          does trading K positions at once change your risk, holding total capital at risk fixed? Answer: it depends
-          entirely on correlation — independent positions (0%) reduce risk of ruin versus one big trade; fully
-          correlated positions (100%) make K small trades behave exactly like one large trade sized at K× the risk.
-        </div>
-        <div class="stat-row" id="r_stats"></div>
-        <div class="chart-wrap">
-          <h3>P(streak of ≥X losses within N trades) — swept across win rate</h3>
-          <canvas id="r_chart" data-h="300"></canvas>
-        </div>
-        <div class="chart-wrap">
-          <h3>Risk-per-Trade Sweep — Drawdown from Your Worst Realistic Streak</h3>
-          <table id="r_table"></table>
-        </div>
-        <div class="chart-wrap" id="rc_wrap" style="display:none;">
-          <h3 id="rc_title">Concurrent Positions — Risk of Ruin vs. Correlation</h3>
-          <div class="stat-row" id="rc_stats"></div>
-          <canvas id="rc_chart" data-h="300"></canvas>
-        </div>
-      </div>
-    </div>
-  </section>
+<div>
+<div class="legend">
+<b>What you're looking at:</b> P(...) is the exact probability, given your win rate, that a losing streak of
+the length you specified happens at least once within your trade horizon. The bar chart sweeps that across
+win rates so you can see how much streak risk drops as edge improves. The sweep table converts the streak
+into an actual account drawdown % at different risk-per-trade levels, so you can see which risk levels are
+survivable versus account-blowing. The Concurrent Positions section below answers the question directly:
+does trading K positions at once change your risk, holding total capital at risk fixed? Answer: it depends
+entirely on correlation — independent positions (0%) reduce risk of ruin versus one big trade; fully
+correlated positions (100%) make K small trades behave exactly like one large trade sized at K× the risk.
+</div>
+<div class="stat-row" id="r_stats"></div>
+<div class="chart-wrap">
+<h3>P(streak of ≥X losses within N trades) — swept across win rate</h3>
+<canvas id="r_chart" data-h="300"></canvas>
+</div>
+<div class="chart-wrap">
+<h3>Risk-per-Trade Sweep — Drawdown from Your Worst Realistic Streak</h3>
+<table id="r_table"></table>
+</div>
+<div class="chart-wrap" id="rc_wrap" style="display:none;">
+<h3 id="rc_title">Concurrent Positions — Risk of Ruin vs. Correlation</h3>
+<div class="stat-row" id="rc_stats"></div>
+<canvas id="rc_chart" data-h="300"></canvas>
+</div>
+</div>
+</div>
+</section>
 
 </main>
 
@@ -512,22 +536,22 @@
 <script>
 /* ============ NAV ============ */
 document.querySelectorAll('nav button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.panel).classList.add('active');
-    // Canvases inside a display:none panel measure 0 width, so charts drawn while
-    // hidden come out blank. Redraw now that the panel is actually visible.
-    redrawPanel(btn.dataset.panel);
-  });
+btn.addEventListener('click',()=>{
+document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+btn.classList.add('active');
+document.getElementById(btn.dataset.panel).classList.add('active');
+// Canvases inside a display:none panel measure 0 width, so charts drawn while
+// hidden come out blank. Redraw now that the panel is actually visible.
+redrawPanel(btn.dataset.panel);
+});
 });
 
 function redrawPanel(panelId){
-  if(panelId==='mc') runSingleMC();
-  else if(panelId==='maxloss') runMaxLoss(!!lastMaxLossParams);
-  else if(panelId==='kelly') runKelly();
-  else if(panelId==='ruin') runRuin();
+if(panelId==='mc') runSingleMC();
+else if(panelId==='maxloss') runMaxLoss(!!lastMaxLossParams);
+else if(panelId==='kelly') runKelly();
+else if(panelId==='ruin') runRuin();
 }
 
 /* ============ SHARED HELPERS ============ */
@@ -536,406 +560,467 @@ function fmtPct(x,d=1){ return (x*100).toFixed(d)+'%'; }
 function mean(arr){ return arr.reduce((a,b)=>a+b,0)/arr.length; }
 function median(sortedArr){ return percentile(sortedArr,0.5); }
 function percentile(sortedArr, p){
-  if(sortedArr.length===0) return NaN;
-  const idx = (sortedArr.length-1)*p;
-  const lo = Math.floor(idx), hi = Math.ceil(idx);
-  if(lo===hi) return sortedArr[lo];
-  return sortedArr[lo] + (sortedArr[hi]-sortedArr[lo])*(idx-lo);
+if(sortedArr.length===0) return NaN;
+const idx = (sortedArr.length-1)*p;
+const lo = Math.floor(idx), hi = Math.ceil(idx);
+if(lo===hi) return sortedArr[lo];
+return sortedArr[lo] + (sortedArr[hi]-sortedArr[lo])*(idx-lo);
+}
+
+/* Qualitative verdicts — shared across all four simulators */
+function annualize(totalReturnPct, years){
+if(!isFinite(totalReturnPct)) return -1;
+if(years<=0.02) return totalReturnPct;
+const base = 1+totalReturnPct;
+if(base<=0) return -1;
+return Math.pow(base, 1/years) - 1;
+}
+function pnlVerdict(totalReturnPct){
+if(totalReturnPct >= 0.40) return {label:'Highly Profitable', cls:'green'};
+if(totalReturnPct >= 0.15) return {label:'Profitable', cls:'green'};
+if(totalReturnPct >= 0.05) return {label:'Mildly Profitable', cls:'gold'};
+if(totalReturnPct >= 0)    return {label:'Barely Breakeven', cls:'gold'};
+if(totalReturnPct >= -0.05) return {label:'Breakeven', cls:'slate'};
+return {label:'Loss-Making', cls:'red'};
+}
+function riskVerdict(dd){
+if(dd < 0.20) return {label:'Survivable', cls:'green'};
+if(dd < 0.40) return {label:'Painful, Recoverable', cls:'gold'};
+if(dd < 0.60) return {label:'Severe Damage', cls:'red'};
+return {label:'Account-Blowing', cls:'red'};
+}
+function probVerdict(prob){
+if(prob < 0.05) return {label:'Low Risk', cls:'green'};
+if(prob < 0.20) return {label:'Moderate Risk', cls:'gold'};
+if(prob < 0.50) return {label:'High Risk', cls:'red'};
+return {label:'Extreme Risk', cls:'red'};
 }
 
 /* Exact Markov-chain DP: P(a run of >=X consecutive losses occurs within N trials), loss prob q */
 function probStreakWithinN(q, X, N){
-  let state = new Array(X).fill(0);
-  state[0] = 1;
-  let pAbsorbed = 0;
-  const p = 1-q;
-  for(let t=0;t<N;t++){
-    const next = new Array(X).fill(0);
-    for(let s=0;s<X;s++){
-      const prob = state[s];
-      if(prob===0) continue;
-      next[0] += prob*p;
-      const ns = s+1;
-      if(ns>=X){ pAbsorbed += prob*q; }
-      else { next[ns] += prob*q; }
-    }
-    state = next;
-  }
-  return pAbsorbed;
+let state = new Array(X).fill(0);
+state[0] = 1;
+let pAbsorbed = 0;
+const p = 1-q;
+for(let t=0;t<N;t++){
+const next = new Array(X).fill(0);
+for(let s=0;s<X;s++){
+const prob = state[s];
+if(prob===0) continue;
+next[0] += prob*p;
+const ns = s+1;
+if(ns>=X){ pAbsorbed += prob*q; }
+else { next[ns] += prob*q; }
+}
+state = next;
+}
+return pAbsorbed;
 }
 
 /* ============ CORRELATED CONCURRENT POSITIONS (one-factor Gaussian copula) ============
-   Standard portfolio-credit-risk technique (Vasicek/one-factor model), repurposed here for
-   K simultaneously-opened trades that share a common market/breadth factor. rho=0 makes the
-   K outcomes independent; rho=1 makes them move in lockstep (identical outcome each round).
-   The marginal win probability of each individual position is always exactly p, regardless of rho —
-   only the co-movement between the K positions changes. Verified numerically: variance of the
-   round's combined R-outcome scales from K*Var(single) at rho=0 to K^2*Var(single) at rho=1,
-   exactly matching theory (independent-sum vs. fully-correlated-sum variance). */
+Standard portfolio-credit-risk technique (Vasicek/one-factor model), repurposed here for
+K simultaneously-opened trades that share a common market/breadth factor. rho=0 makes the
+K outcomes independent; rho=1 makes them move in lockstep (identical outcome each round).
+The marginal win probability of each individual position is always exactly p, regardless of rho —
+only the co-movement between the K positions changes. Verified numerically: variance of the
+round's combined R-outcome scales from K*Var(single) at rho=0 to K^2*Var(single) at rho=1,
+exactly matching theory (independent-sum vs. fully-correlated-sum variance). */
 function randNormal(){
-  let u=0,v=0;
-  while(u===0) u=Math.random();
-  while(v===0) v=Math.random();
-  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+let u=0,v=0;
+while(u===0) u=Math.random();
+while(v===0) v=Math.random();
+return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
 }
 function invNormalCDF(p){
-  if(p<=0) return -Infinity;
-  if(p>=1) return Infinity;
-  const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
-  const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
-  const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
-  const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
-  const p_low=0.02425, p_high=1-p_low;
-  let q,r_;
-  if(p<p_low){
-    q=Math.sqrt(-2*Math.log(p));
-    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  } else if(p<=p_high){
-    q=p-0.5; r_=q*q;
-    return (((((a[0]*r_+a[1])*r_+a[2])*r_+a[3])*r_+a[4])*r_+a[5])*q / (((((b[0]*r_+b[1])*r_+b[2])*r_+b[3])*r_+b[4])*r_+1);
-  } else {
-    q=Math.sqrt(-2*Math.log(1-p));
-    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
-  }
+if(p<=0) return -Infinity;
+if(p>=1) return Infinity;
+const a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+const b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+const c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+const d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+const p_low=0.02425, p_high=1-p_low;
+let q,r_;
+if(p<p_low){
+q=Math.sqrt(-2*Math.log(p));
+return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+} else if(p<=p_high){
+q=p-0.5; r_=q*q;
+return (((((a[0]*r_+a[1])*r_+a[2])*r_+a[3])*r_+a[4])*r_+a[5])*q / (((((b[0]*r_+b[1])*r_+b[2])*r_+b[3])*r_+b[4])*r_+1);
+} else {
+q=Math.sqrt(-2*Math.log(1-p));
+return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+}
 }
 function correlatedOutcomes(p, rho, K){
-  const threshold = invNormalCDF(p);
-  const M = randNormal();
-  const sqRho = Math.sqrt(rho), sqOM = Math.sqrt(1-rho);
-  const out = new Array(K);
-  for(let i=0;i<K;i++){
-    const Z = sqRho*M + sqOM*randNormal();
-    out[i] = Z <= threshold; // true = win
-  }
-  return out;
+const threshold = invNormalCDF(p);
+const M = randNormal();
+const sqRho = Math.sqrt(rho), sqOM = Math.sqrt(1-rho);
+const out = new Array(K);
+for(let i=0;i<K;i++){
+const Z = sqRho*M + sqOM*randNormal();
+out[i] = Z <= threshold; // true = win
+}
+return out;
 }
 
 /* ============ DEPENDENCY-FREE CANVAS CHARTS ============ */
 function hexToRgba(hex, alpha){
-  const h = hex.replace('#','');
-  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
-  return `rgba(${r},${g},${b},${alpha})`;
+const h = hex.replace('#','');
+const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+return `rgba(${r},${g},${b},${alpha})`;
 }
 
 function setupCanvas(canvas){
-  const dpr = window.devicePixelRatio || 1;
-  const parent = canvas.parentElement;
-  const cs = getComputedStyle(parent);
-  const padX = (parseFloat(cs.paddingLeft)||0) + (parseFloat(cs.paddingRight)||0);
-  let cssW = parent.clientWidth - padX;
-  if(!cssW || cssW < 50) cssW = 600; // parent hidden/not yet laid out — fall back, will be redrawn when visible
-  const cssH = parseInt(canvas.dataset.h || 320);
-  canvas.style.width = cssW+'px';
-  canvas.style.height = cssH+'px';
-  canvas.width = Math.round(cssW*dpr);
-  canvas.height = Math.round(cssH*dpr);
-  const ctx = canvas.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  return {ctx, w:cssW, h:cssH};
+const dpr = window.devicePixelRatio || 1;
+const parent = canvas.parentElement;
+const cs = getComputedStyle(parent);
+const padX = (parseFloat(cs.paddingLeft)||0) + (parseFloat(cs.paddingRight)||0);
+let cssW = parent.clientWidth - padX;
+if(!cssW || cssW < 50) cssW = 600; // parent hidden/not yet laid out — fall back, will be redrawn when visible
+const cssH = parseInt(canvas.dataset.h || 320);
+canvas.style.width = cssW+'px';
+canvas.style.height = cssH+'px';
+canvas.width = Math.round(cssW*dpr);
+canvas.height = Math.round(cssH*dpr);
+const ctx = canvas.getContext('2d');
+ctx.setTransform(dpr,0,0,dpr,0,0);
+return {ctx, w:cssW, h:cssH};
 }
 
 function drawLineChart(canvas, data, opts={}){
-  const {ctx,w,h} = setupCanvas(canvas);
-  ctx.clearRect(0,0,w,h);
-  const color = opts.color || '#C9971F';
-  const yFmt = opts.yFmt || (v=>v.toFixed(1));
-  const xFmt = opts.xFmt || (i=>i);
-  const padL = opts.padL || 68, padR = 16, padT = 14, padB = 30;
-  const plotW = w-padL-padR, plotH = h-padT-padB;
-  const n = data.length;
-  if(n<2) return;
-  let minV = Math.min(...data), maxV = Math.max(...data);
-  if(minV===maxV){ minV -= 1; maxV += 1; }
-  const pad = (maxV-minV)*0.08;
-  const yMin = minV-pad, yMax = maxV+pad;
+const {ctx,w,h} = setupCanvas(canvas);
+ctx.clearRect(0,0,w,h);
+const color = opts.color || '#C9971F';
+const yFmt = opts.yFmt || (v=>v.toFixed(1));
+const xFmt = opts.xFmt || (i=>i);
+const padL = opts.padL || 68, padR = 16, padT = 14, padB = 30;
+const plotW = w-padL-padR, plotH = h-padT-padB;
+const n = data.length;
+if(n<2) return;
+let minV = Math.min(...data), maxV = Math.max(...data);
+if(minV===maxV){ minV -= 1; maxV += 1; }
+const pad = (maxV-minV)*0.08;
+const yMin = minV-pad, yMax = maxV+pad;
 
-  ctx.font = '10.5px Arial'; ctx.textBaseline = 'middle';
-  const ySteps = 5;
-  for(let i=0;i<=ySteps;i++){
-    const v = yMin + (yMax-yMin)*i/ySteps;
-    const y = padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
-    ctx.strokeStyle = '#2A2F3B'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
-    ctx.fillStyle = '#5B6472'; ctx.textAlign = 'right';
-    ctx.fillText(yFmt(v), padL-8, y);
-  }
+ctx.font = '10.5px Arial'; ctx.textBaseline = 'middle';
+const ySteps = 5;
+for(let i=0;i<=ySteps;i++){
+const v = yMin + (yMax-yMin)*i/ySteps;
+const y = padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
+ctx.strokeStyle = '#2A2F3B'; ctx.lineWidth = 1;
+ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+ctx.fillStyle = '#5B6472'; ctx.textAlign = 'right';
+ctx.fillText(yFmt(v), padL-8, y);
+}
 
-  const xToPx = i => padL + (i/(n-1))*plotW;
-  const yToPx = v => padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
+const xToPx = i => padL + (i/(n-1))*plotW;
+const yToPx = v => padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
 
-  ctx.beginPath();
-  data.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
-  ctx.lineTo(xToPx(n-1), padT+plotH); ctx.lineTo(xToPx(0), padT+plotH); ctx.closePath();
-  ctx.fillStyle = hexToRgba(color, 0.10); ctx.fill();
+ctx.beginPath();
+data.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+ctx.lineTo(xToPx(n-1), padT+plotH); ctx.lineTo(xToPx(0), padT+plotH); ctx.closePath();
+ctx.fillStyle = hexToRgba(color, 0.10); ctx.fill();
 
-  ctx.beginPath();
-  data.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
-  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+ctx.beginPath();
+data.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
 
-  ctx.fillStyle = '#5B6472'; ctx.textAlign = 'center'; ctx.textBaseline='top';
-  const xTicks = Math.min(8, n-1);
-  for(let i=0;i<=xTicks;i++){
-    const idx = Math.round(i/xTicks*(n-1));
-    ctx.fillText(xFmt(idx), xToPx(idx), padT+plotH+8);
-  }
+ctx.fillStyle = '#5B6472'; ctx.textAlign = 'center'; ctx.textBaseline='top';
+const xTicks = Math.min(8, n-1);
+for(let i=0;i<=xTicks;i++){
+const idx = Math.round(i/xTicks*(n-1));
+ctx.fillText(xFmt(idx), xToPx(idx), padT+plotH+8);
+}
 }
 
 function drawBarChart(canvas, labels, data, colors, opts={}){
-  const {ctx,w,h} = setupCanvas(canvas);
-  ctx.clearRect(0,0,w,h);
-  const yFmt = opts.yFmt || (v=>v.toFixed(0));
-  const padL = opts.padL || 60, padR = 16, padT = 14, padB = 34;
-  const plotW = w-padL-padR, plotH = h-padT-padB;
-  const n = data.length;
-  if(n===0) return;
-  const maxV = Math.max(...data, 0.0001);
-  const minV = Math.min(0, ...data);
+const {ctx,w,h} = setupCanvas(canvas);
+ctx.clearRect(0,0,w,h);
+const yFmt = opts.yFmt || (v=>v.toFixed(0));
+const padL = opts.padL || 60, padR = 16, padT = 14, padB = 34;
+const plotW = w-padL-padR, plotH = h-padT-padB;
+const n = data.length;
+if(n===0) return;
+const maxV = Math.max(...data, 0.0001);
+const minV = Math.min(0, ...data);
 
-  ctx.font = '10.5px Arial'; ctx.textBaseline='middle';
-  const ySteps=5;
-  for(let i=0;i<=ySteps;i++){
-    const v = minV + (maxV-minV)*i/ySteps;
-    const y = padT+plotH-(v-minV)/(maxV-minV)*plotH;
-    ctx.strokeStyle='#2A2F3B'; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
-    ctx.fillStyle='#5B6472'; ctx.textAlign='right';
-    ctx.fillText(yFmt(v), padL-8, y);
-  }
+ctx.font = '10.5px Arial'; ctx.textBaseline='middle';
+const ySteps=5;
+for(let i=0;i<=ySteps;i++){
+const v = minV + (maxV-minV)*i/ySteps;
+const y = padT+plotH-(v-minV)/(maxV-minV)*plotH;
+ctx.strokeStyle='#2A2F3B'; ctx.lineWidth=1;
+ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+ctx.fillStyle='#5B6472'; ctx.textAlign='right';
+ctx.fillText(yFmt(v), padL-8, y);
+}
 
-  const slot = plotW/n;
-  const barW = slot*0.68;
-  data.forEach((v,i)=>{
-    const x = padL + i*slot + (slot-barW)/2;
-    const zeroY = padT+plotH-(0-minV)/(maxV-minV)*plotH;
-    const barY = padT+plotH-(v-minV)/(maxV-minV)*plotH;
-    const y = Math.min(zeroY, barY);
-    const hgt = Math.abs(zeroY-barY);
-    ctx.fillStyle = Array.isArray(colors) ? colors[i] : (colors||'#C9971F');
-    ctx.fillRect(x, y, barW, Math.max(hgt,0.5));
-  });
+const slot = plotW/n;
+const barW = slot*0.68;
+data.forEach((v,i)=>{
+const x = padL + i*slot + (slot-barW)/2;
+const zeroY = padT+plotH-(0-minV)/(maxV-minV)*plotH;
+const barY = padT+plotH-(v-minV)/(maxV-minV)*plotH;
+const y = Math.min(zeroY, barY);
+const hgt = Math.abs(zeroY-barY);
+ctx.fillStyle = Array.isArray(colors) ? colors[i] : (colors||'#C9971F');
+ctx.fillRect(x, y, barW, Math.max(hgt,0.5));
+});
 
-  ctx.fillStyle='#5B6472'; ctx.textAlign='center'; ctx.textBaseline='top';
-  const skip = Math.ceil(n/14);
-  labels.forEach((lab,i)=>{
-    if(i%skip!==0 && i!==n-1) return;
-    const x = padL + i*slot + slot/2;
-    ctx.fillText(lab, x, padT+plotH+8);
-  });
+ctx.fillStyle='#5B6472'; ctx.textAlign='center'; ctx.textBaseline='top';
+const skip = Math.ceil(n/14);
+labels.forEach((lab,i)=>{
+if(i%skip!==0 && i!==n-1) return;
+const x = padL + i*slot + slot/2;
+ctx.fillText(lab, x, padT+plotH+8);
+});
 }
 
 window.addEventListener('resize', ()=>{
-  clearTimeout(window._rzT);
-  window._rzT = setTimeout(()=>{
-    const activePanel = document.querySelector('.panel.active');
-    if(activePanel) redrawPanel(activePanel.id);
-  }, 200);
+clearTimeout(window._rzT);
+window._rzT = setTimeout(()=>{
+const activePanel = document.querySelector('.panel.active');
+if(activePanel) redrawPanel(activePanel.id);
+}, 200);
 });
 
 /* ============ MONTE CARLO SIMULATOR ============ */
 document.getElementById('mc_p').addEventListener('input',e=>{document.getElementById('mc_p_val').textContent=e.target.value+'%';});
 document.getElementById('mc_risk').addEventListener('input',e=>{document.getElementById('mc_risk_val').textContent=parseFloat(e.target.value).toFixed(1)+'%';});
 document.getElementById('mc_rr').addEventListener('input',e=>{document.getElementById('mc_rr_val').textContent=parseFloat(e.target.value).toFixed(1)+'R';});
+document.getElementById('mc_charge').addEventListener('input',e=>{document.getElementById('mc_charge_val').textContent=parseFloat(e.target.value).toFixed(2)+'%';});
 document.querySelectorAll('input[name="mc_mode"]').forEach(rd=>{
-  rd.addEventListener('change',e=>{
-    const fixed = e.target.value==='fixed';
-    document.getElementById('mc_fixed_inputs').style.display = fixed?'block':'none';
-    document.getElementById('mc_percent_inputs').style.display = fixed?'none':'block';
-  });
+rd.addEventListener('change',e=>{
+const fixed = e.target.value==='fixed';
+document.getElementById('mc_fixed_inputs').style.display = fixed?'block':'none';
+document.getElementById('mc_percent_inputs').style.display = fixed?'none':'block';
+});
 });
 document.querySelectorAll('input[name="mc_goal"]').forEach(rd=>{
-  rd.addEventListener('change',e=>{
-    const trades = e.target.value==='trades';
-    document.getElementById('mc_goal_trades').style.display = trades?'block':'none';
-    document.getElementById('mc_goal_multiple').style.display = trades?'none':'block';
-  });
+rd.addEventListener('change',e=>{
+const trades = e.target.value==='trades';
+document.getElementById('mc_goal_trades').style.display = trades?'block':'none';
+document.getElementById('mc_goal_multiple').style.display = trades?'none':'block';
+});
+});
+document.querySelectorAll('input[name="mc_style"]').forEach(rd=>{
+rd.addEventListener('change',e=>{
+const swing = e.target.value==='swing';
+document.getElementById('mc_swing_time_inputs').style.display = swing?'block':'none';
+document.getElementById('mc_intraday_time_inputs').style.display = swing?'none':'block';
+});
 });
 document.getElementById('mc_k').addEventListener('input', updateMcKLabels);
 document.getElementById('mc_rho').addEventListener('input',e=>{document.getElementById('mc_rho_val').textContent=e.target.value+'%';});
 function updateMcKLabels(){
-  const K = parseInt(document.getElementById('mc_k').value)||1;
-  document.getElementById('mc_corr_wrap').style.display = K>1 ? 'block' : 'none';
-  document.getElementById('mc_n_label').textContent = K>1 ? 'Number of Rounds (of '+K+' positions)' : 'Number of Trades';
-  document.getElementById('mc_cap_label').textContent = K>1 ? 'Max Rounds Cap (safety limit)' : 'Max Trades Cap (safety limit)';
+const K = parseInt(document.getElementById('mc_k').value)||1;
+document.getElementById('mc_corr_wrap').style.display = K>1 ? 'block' : 'none';
+document.getElementById('mc_n_label').textContent = K>1 ? 'Number of Rounds (of '+K+' positions)' : 'Number of Trades';
+document.getElementById('mc_cap_label').textContent = K>1 ? 'Max Rounds Cap (safety limit)' : 'Max Trades Cap (safety limit)';
 }
 updateMcKLabels();
 
 function mcParams(){
-  const mode = document.querySelector('input[name="mc_mode"]:checked').value;
-  const goal = document.querySelector('input[name="mc_goal"]:checked').value;
-  return {
-    p: parseFloat(document.getElementById('mc_p').value)/100,
-    mode, goal,
-    winAmt: parseFloat(document.getElementById('mc_win_amt').value),
-    lossAmt: parseFloat(document.getElementById('mc_loss_amt').value),
-    comm: parseFloat(document.getElementById('mc_comm').value),
-    risk: parseFloat(document.getElementById('mc_risk').value)/100,
-    rr: parseFloat(document.getElementById('mc_rr').value),
-    start: parseFloat(document.getElementById('mc_start').value),
-    n: parseInt(document.getElementById('mc_n').value),
-    target: parseFloat(document.getElementById('mc_target').value),
-    cap: parseInt(document.getElementById('mc_cap').value),
-    K: Math.max(1, parseInt(document.getElementById('mc_k').value)||1),
-    rho: parseFloat(document.getElementById('mc_rho').value)/100,
-    winDays: parseFloat(document.getElementById('mc_win_days').value)||1,
-    lossDays: parseFloat(document.getElementById('mc_loss_days').value)||1,
-    idleDays: parseFloat(document.getElementById('mc_idle_days').value)||0
-  };
+const mode = document.querySelector('input[name="mc_mode"]:checked').value;
+const goal = document.querySelector('input[name="mc_goal"]:checked').value;
+return {
+p: parseFloat(document.getElementById('mc_p').value)/100,
+mode, goal,
+winAmt: parseFloat(document.getElementById('mc_win_amt').value),
+lossAmt: parseFloat(document.getElementById('mc_loss_amt').value),
+comm: parseFloat(document.getElementById('mc_comm').value),
+risk: parseFloat(document.getElementById('mc_risk').value)/100,
+rr: parseFloat(document.getElementById('mc_rr').value),
+chargePct: parseFloat(document.getElementById('mc_charge').value)/100,
+start: parseFloat(document.getElementById('mc_start').value),
+n: parseInt(document.getElementById('mc_n').value),
+target: parseFloat(document.getElementById('mc_target').value),
+cap: parseInt(document.getElementById('mc_cap').value),
+K: Math.max(1, parseInt(document.getElementById('mc_k').value)||1),
+rho: parseFloat(document.getElementById('mc_rho').value)/100,
+winDays: parseFloat(document.getElementById('mc_win_days').value)||1,
+lossDays: parseFloat(document.getElementById('mc_loss_days').value)||1,
+idleDays: parseFloat(document.getElementById('mc_idle_days').value)||0,
+tradeStyle: document.querySelector('input[name="mc_style"]:checked').value,
+maxPerDay: Math.max(1, parseFloat(document.getElementById('mc_max_per_day').value)||1)
+};
 }
 
 // Workload (sum of individual position holding days) spread across K parallel slots, plus idle time
 // between rounds. K=1 reduces to a simple sequential sum of each trade's own holding period.
-function estimateTradingDays(winPositions, totalPositions, roundsRun, K, winDays, lossDays, idleDays){
-  const lossPositions = totalPositions - winPositions;
-  const workload = winPositions*winDays + lossPositions*lossDays;
-  return workload/K + roundsRun*idleDays;
+// Intraday style ignores holding-day workload entirely — every position closes same-day, so duration
+// is instead capped by how many rounds can be executed per trading day.
+function estimateTradingDays(winPositions, totalPositions, roundsRun, K, winDays, lossDays, idleDays, tradeStyle, maxPerDay){
+if(tradeStyle==='intraday'){
+return roundsRun / Math.max(1, maxPerDay||1);
+}
+const lossPositions = totalPositions - winPositions;
+const workload = winPositions*winDays + lossPositions*lossDays;
+return workload/K + roundsRun*idleDays;
 }
 function tradingDaysToCalendar(tdays){
-  const calDays = tdays * 7/5; // weekends only; holidays ignored
-  return {tradingDays: tdays, calDays, months: calDays/30.44, years: calDays/365.25};
+const calDays = tdays * 7/5; // weekends only; holidays ignored
+return {tradingDays: tdays, calDays, months: calDays/30.44, years: calDays/365.25};
 }
 function fmtDuration(tdays){
-  const {calDays, months, years} = tradingDaysToCalendar(tdays);
-  if(years>=1.5) return years.toFixed(1)+' yrs';
-  if(months>=1.5) return months.toFixed(1)+' mo';
-  return Math.round(calDays)+' days';
+const {calDays, months, years} = tradingDaysToCalendar(tdays);
+if(years>=1.5) return years.toFixed(1)+' yrs';
+if(months>=1.5) return months.toFixed(1)+' mo';
+return Math.round(calDays)+' days';
 }
 
 // Equity always tracked from `start`, for both sizing models, so multiples (equity/start) are always meaningful.
 // Each iteration is a "round" of K concurrent positions (K=1 reduces exactly to the original single-trade model).
 function simulateRun(params){
-  const {p,mode,winAmt,lossAmt,comm,risk,rr,start,goal,n,target,cap,K,rho} = params;
-  const targetMode = goal==='multiple';
-  const maxRounds = targetMode ? cap : n;
-  let equity = start;
-  const path = [equity];
-  let peak = equity, trough = equity, maxDD = 0;
-  let winPositions=0, totalPositions=0, curWinStreak=0, curLossStreak=0, bestWin=0, bestLoss=0;
-  let roundsRun = 0, reachedTarget=false;
-  for(let i=0;i<maxRounds;i++){
-    const outcomes = correlatedOutcomes(p, rho, K);
-    let sumR = 0, dollarDelta = 0;
-    outcomes.forEach(isWin=>{
-      totalPositions++;
-      if(isWin){ winPositions++; sumR += rr; } else { sumR -= 1; }
-      dollarDelta += (isWin?winAmt:lossAmt) + comm;
-    });
-    if(mode==='fixed'){ equity += dollarDelta; } else { equity *= (1 + risk*sumR); }
-    roundsRun++;
-    if(sumR>0){ curWinStreak++; curLossStreak=0; bestWin=Math.max(bestWin,curWinStreak); }
-    else { curLossStreak++; curWinStreak=0; bestLoss=Math.max(bestLoss,curLossStreak); }
-    peak = Math.max(peak, equity);
-    trough = Math.min(trough, equity);
-    const dd = peak>0 ? (peak-equity)/peak : 0;
-    maxDD = Math.max(maxDD, dd);
-    path.push(equity);
-    if(targetMode && equity >= start*target){ reachedTarget = true; break; }
-  }
-  return {path, final: equity, peak, trough, maxDD, winRate: winPositions/totalPositions, bestWin, bestLoss, tradesRun: roundsRun, reachedTarget, targetMode, K, winPositions, totalPositions};
+const {p,mode,winAmt,lossAmt,comm,risk,rr,chargePct,start,goal,n,target,cap,K,rho} = params;
+const targetMode = goal==='multiple';
+const maxRounds = targetMode ? cap : n;
+let equity = start;
+const path = [equity];
+let peak = equity, trough = equity, maxDD = 0;
+let winPositions=0, totalPositions=0, curWinStreak=0, curLossStreak=0, bestWin=0, bestLoss=0;
+let roundsRun = 0, reachedTarget=false;
+for(let i=0;i<maxRounds;i++){
+const outcomes = correlatedOutcomes(p, rho, K);
+let sumR = 0, dollarDelta = 0;
+outcomes.forEach(isWin=>{
+totalPositions++;
+if(isWin){ winPositions++; sumR += rr; } else { sumR -= 1; }
+dollarDelta += (isWin?winAmt:lossAmt) + comm;
+});
+if(mode==='fixed'){ equity += dollarDelta; } else { equity *= (1 + risk*sumR - K*(chargePct||0)); }
+roundsRun++;
+if(sumR>0){ curWinStreak++; curLossStreak=0; bestWin=Math.max(bestWin,curWinStreak); }
+else { curLossStreak++; curWinStreak=0; bestLoss=Math.max(bestLoss,curLossStreak); }
+peak = Math.max(peak, equity);
+trough = Math.min(trough, equity);
+const dd = peak>0 ? (peak-equity)/peak : 0;
+maxDD = Math.max(maxDD, dd);
+path.push(equity);
+if(targetMode && equity >= start*target){ reachedTarget = true; break; }
+}
+return {path, final: equity, peak, trough, maxDD, winRate: winPositions/totalPositions, bestWin, bestLoss, tradesRun: roundsRun, reachedTarget, targetMode, K, winPositions, totalPositions};
 }
 
 function runSingleMC(skipDraw){
-  const params = mcParams();
-  const r = simulateRun(params);
-  const isFixed = params.mode==='fixed';
-  const stats = document.getElementById('mc_stats');
-  let extraStat = '';
-  if(r.targetMode){
-    extraStat = r.reachedTarget
-      ? `<div class="stat"><div class="label">Trades to Reach ${params.target}×</div><div class="value gold">${r.tradesRun}</div></div>`
-      : `<div class="stat"><div class="label">Trades to Reach ${params.target}×</div><div class="value red">Not reached in ${params.cap}</div></div>`;
-  }
-  const unit = params.K>1 ? 'rounds' : 'trades';
-  const kStat = params.K>1
-    ? `<div class="stat"><div class="label">Aggregate Risk / Round (${params.K}×${fmtPct(params.risk)})</div><div class="value">${fmtPct(params.K*params.risk)}</div></div>`
-    : '';
-  const tdays = estimateTradingDays(r.winPositions, r.totalPositions, r.tradesRun, params.K, params.winDays, params.lossDays, params.idleDays);
-  const durStat = `<div class="stat"><div class="label">Estimated Duration</div><div class="value gold">${fmtDuration(tdays)}</div></div>`;
-  stats.innerHTML = `
-    ${extraStat}
-    ${durStat}
-    ${kStat}
-    <div class="stat"><div class="label">Final ${isFixed?'Net P&L':'Equity'}</div><div class="value gold">${isFixed?fmt$(r.final-params.start):fmt$(r.final)}</div></div>
-    <div class="stat"><div class="label">Peak Equity</div><div class="value">${fmt$(r.peak)}</div></div>
-    <div class="stat"><div class="label">Trough Equity</div><div class="value red">${fmt$(r.trough)}</div></div>
-    <div class="stat"><div class="label">Max Drawdown</div><div class="value red">${fmtPct(r.maxDD)}</div></div>
-    <div class="stat"><div class="label">Realized Win Rate (per position)</div><div class="value">${fmtPct(r.winRate)}</div></div>
-    <div class="stat"><div class="label">Best Win Streak (${unit})</div><div class="value green">${r.bestWin}</div></div>
-    <div class="stat"><div class="label">Worst Loss Streak (${unit})</div><div class="value red">${r.bestLoss}</div></div>
-  `;
-  document.getElementById('mc_chart_title').textContent = r.targetMode
-    ? `Equity Curve — Single Run (${r.reachedTarget? 'reached '+params.target+'× in '+r.tradesRun+' '+unit : 'did not reach target'})`
-    : `Equity Curve — Single Run${params.K>1 ? ' ('+params.K+' concurrent positions/round)' : ''}`;
-  drawLineChart(document.getElementById('mc_chart'), r.path, {color:'#C9971F', yFmt:v=>fmt$(v), xFmt:i=>i});
-  document.getElementById('mc_batch_wrap').style.display='none';
+const params = mcParams();
+const r = simulateRun(params);
+const isFixed = params.mode==='fixed';
+const stats = document.getElementById('mc_stats');
+let extraStat = '';
+if(r.targetMode){
+extraStat = r.reachedTarget
+? `<div class="stat"><div class="label">Trades to Reach ${params.target}×</div><div class="value gold">${r.tradesRun}</div></div>`
+: `<div class="stat"><div class="label">Trades to Reach ${params.target}×</div><div class="value red">Not reached in ${params.cap}</div></div>`;
+}
+const unit = params.K>1 ? 'rounds' : 'trades';
+const kStat = params.K>1
+? `<div class="stat"><div class="label">Aggregate Risk / Round (${params.K}×${fmtPct(params.risk)})</div><div class="value">${fmtPct(params.K*params.risk)}</div></div>`
+: '';
+const tdays = estimateTradingDays(r.winPositions, r.totalPositions, r.tradesRun, params.K, params.winDays, params.lossDays, params.idleDays, params.tradeStyle, params.maxPerDay);
+const durStat = `<div class="stat"><div class="label">Estimated Duration</div><div class="value gold">${fmtDuration(tdays)}</div></div>`;
+const totalReturnPct = (r.final-params.start)/params.start;
+const {years} = tradingDaysToCalendar(tdays);
+const cagr = annualize(totalReturnPct, years);
+const verdict = pnlVerdict(cagr);
+const verdictStat = `<div class="stat"><div class="label">Conclusion</div><div class="value ${verdict.cls}">${verdict.label}</div></div>`;
+stats.innerHTML = `
+${verdictStat}
+${extraStat}
+${durStat}
+${kStat}
+<div class="stat"><div class="label">Final ${isFixed?'Net P&L':'Equity'}</div><div class="value gold">${isFixed?fmt$(r.final-params.start):fmt$(r.final)}</div></div>
+<div class="stat"><div class="label">Peak Equity</div><div class="value">${fmt$(r.peak)}</div></div>
+<div class="stat"><div class="label">Trough Equity</div><div class="value red">${fmt$(r.trough)}</div></div>
+<div class="stat"><div class="label">Max Drawdown</div><div class="value red">${fmtPct(r.maxDD)}</div></div>
+<div class="stat"><div class="label">Realized Win Rate (per position)</div><div class="value">${fmtPct(r.winRate)}</div></div>
+<div class="stat"><div class="label">Best Win Streak (${unit})</div><div class="value green">${r.bestWin}</div></div>
+<div class="stat"><div class="label">Worst Loss Streak (${unit})</div><div class="value red">${r.bestLoss}</div></div>
+`;
+document.getElementById('mc_chart_title').textContent = r.targetMode
+? `Equity Curve — Single Run (${r.reachedTarget? 'reached '+params.target+'× in '+r.tradesRun+' '+unit : 'did not reach target'})`
+: `Equity Curve — Single Run${params.K>1 ? ' ('+params.K+' concurrent positions/round)' : ''}`;
+drawLineChart(document.getElementById('mc_chart'), r.path, {color:'#C9971F', yFmt:v=>fmt$(v), xFmt:i=>i});
+document.getElementById('mc_batch_wrap').style.display='none';
 }
 
 function runBatchMC(){
-  const params = mcParams();
-  const isFixed = params.mode==='fixed';
-  const N_SIMS = 500;
-  const results = [];
-  for(let s=0;s<N_SIMS;s++) results.push(simulateRun(params));
+const params = mcParams();
+const isFixed = params.mode==='fixed';
+const N_SIMS = 500;
+const results = [];
+for(let s=0;s<N_SIMS;s++) results.push(simulateRun(params));
 
-  document.getElementById('mc_batch_wrap').style.display='block';
+document.getElementById('mc_batch_wrap').style.display='block';
 
-  const unit = params.K>1 ? 'rounds' : 'trades';
-  const durationOf = r => estimateTradingDays(r.winPositions, r.totalPositions, r.tradesRun, params.K, params.winDays, params.lossDays, params.idleDays);
+const unit = params.K>1 ? 'rounds' : 'trades';
+const durationOf = r => estimateTradingDays(r.winPositions, r.totalPositions, r.tradesRun, params.K, params.winDays, params.lossDays, params.idleDays, params.tradeStyle, params.maxPerDay);
 
-  if(params.goal==='multiple'){
-    document.getElementById('mc_batch_title').textContent = `500-Simulation Summary — ${unit[0].toUpperCase()+unit.slice(1)} to Reach ${params.target}×`;
-    const reachedRuns = results.filter(r=>r.reachedTarget);
-    const reached = reachedRuns.map(r=>r.tradesRun).sort((a,b)=>a-b);
-    const durations = reachedRuns.map(durationOf).sort((a,b)=>a-b);
-    const pctReached = (reached.length/N_SIMS*100).toFixed(0);
-    let html = '<tr><th style="text-align:left">Metric (n=500 runs)</th><th>Value</th></tr>';
-    if(reached.length>0){
-      html += `<tr><td style="text-align:left">% of runs that reached ${params.target}× within ${params.cap} ${unit}</td><td>${pctReached}%</td></tr>`;
-      html += `<tr><td style="text-align:left">Fastest (best case)</td><td>${reached[0]} ${unit} (${fmtDuration(durations[0])})</td></tr>`;
-      html += `<tr class="highlight"><td style="text-align:left">Median (typical case)</td><td>${Math.round(median(reached))} ${unit} (${fmtDuration(median(durations))})</td></tr>`;
-      html += `<tr><td style="text-align:left">Average</td><td>${Math.round(mean(reached))} ${unit} (${fmtDuration(mean(durations))})</td></tr>`;
-      html += `<tr><td style="text-align:left">Slowest of those that reached it</td><td>${reached[reached.length-1]} ${unit} (${fmtDuration(durations[durations.length-1])})</td></tr>`;
-    } else {
-      html += `<tr><td style="text-align:left" colspan="2">0 of 500 runs reached ${params.target}× within ${params.cap} ${unit} — this edge/risk combination is too weak or the cap is too low.</td></tr>`;
-    }
-    document.getElementById('mc_batch_table').innerHTML = html;
-    const note0 = document.getElementById('mc_batch_note');
-    note0.style.display = reached.length>0 ? 'block' : 'none';
-    note0.innerHTML = 'Duration estimates use your Time Estimate inputs (Avg Days Held for winners/losers, idle days between rounds), converted from trading days to calendar time.';
-    return;
-  }
+const cagrs = results.map(r=>{
+const totalReturnPct = (r.final-params.start)/params.start;
+const yrs = tradingDaysToCalendar(durationOf(r)).years;
+return annualize(totalReturnPct, yrs);
+});
+const medianCagr = median([...cagrs].sort((a,b)=>a-b));
+const batchVerdict = pnlVerdict(medianCagr);
+document.getElementById('mc_batch_verdict_row').innerHTML =
+`<div class="stat"><div class="label">Conclusion (median annualized)</div><div class="value ${batchVerdict.cls}">${batchVerdict.label}</div></div>`;
 
-  document.getElementById('mc_batch_title').textContent = '500-Simulation Summary';
-  const peaks=results.map(r=>r.peak), troughs=results.map(r=>r.trough), finals=results.map(r=>r.final);
-  const winStreaks=results.map(r=>r.bestWin), lossStreaks=results.map(r=>r.bestLoss);
-  const drawdowns=results.map(r=>r.maxDD);
-  const durationsAll=results.map(durationOf);
-  const rows = [
-    ['Peak Equity', peaks, 'money', 'high-good'],
-    ['Trough Equity', troughs, 'money', 'high-good'],
-    [isFixed?'Final Net P&L':'Final Equity', isFixed?finals.map(f=>f-params.start):finals, 'money', 'high-good'],
-    ['Max Drawdown', drawdowns, 'pct', 'high-bad'],
-    ['Best Win Streak', winStreaks, 'num', 'high-good'],
-    ['Worst Loss Streak', lossStreaks, 'num', 'high-bad'],
-    ['Estimated Duration', durationsAll, 'duration', 'high-bad']
-  ];
-  let html = '<tr><th style="text-align:left">Metric (n=500 runs)</th><th>Worst Case</th><th class="highlight">Median (typical)</th><th>Average (mean)</th><th>Best Case</th></tr>';
-  rows.forEach(([lab,arr,kind,dir])=>{
-    const f = kind==='money' ? fmt$ : kind==='pct' ? (v=>fmtPct(v)) : kind==='duration' ? fmtDuration : (v=>v.toFixed(1));
-    const sorted = [...arr].sort((a,b)=>a-b);
-    const worst = dir==='high-bad' ? Math.max(...arr) : Math.min(...arr);
-    const best  = dir==='high-bad' ? Math.min(...arr) : Math.max(...arr);
-    html += `<tr><td style="text-align:left">${lab}</td><td>${f(worst)}</td><td class="highlight">${f(median(sorted))}</td><td>${f(mean(arr))}</td><td>${f(best)}</td></tr>`;
-  });
-  document.getElementById('mc_batch_table').innerHTML = html;
-  const note = document.getElementById('mc_batch_note');
-  note.style.display = 'block';
-  note.innerHTML =
-    'Median is the better read for "what a typical run looks like." Compounding returns are right-skewed — a small ' +
-    'number of lucky runs with early winning streaks compound to very large numbers and drag the Average upward, well ' +
-    'above what most runs actually experience. The Average is still the right number if you specifically care about ' +
-    'expected value across many possible timelines (e.g. running many separate accounts), just not "what will likely ' +
-    'happen to me." For Max Drawdown and Estimated Duration, "Worst Case" and "Best Case" are flipped versus the equity ' +
-    'rows — a bigger number is worse, not better.';
+if(params.goal==='multiple'){
+document.getElementById('mc_batch_title').textContent = `500-Simulation Summary — ${unit[0].toUpperCase()+unit.slice(1)} to Reach ${params.target}×`;
+const reachedRuns = results.filter(r=>r.reachedTarget);
+const reached = reachedRuns.map(r=>r.tradesRun).sort((a,b)=>a-b);
+const durations = reachedRuns.map(durationOf).sort((a,b)=>a-b);
+const pctReached = (reached.length/N_SIMS*100).toFixed(0);
+let html = '<tr><th style="text-align:left">Metric (n=500 runs)</th><th>Value</th></tr>';
+if(reached.length>0){
+html += `<tr><td style="text-align:left">% of runs that reached ${params.target}× within ${params.cap} ${unit}</td><td>${pctReached}%</td></tr>`;
+html += `<tr><td style="text-align:left">Fastest (best case)</td><td>${reached[0]} ${unit} (${fmtDuration(durations[0])})</td></tr>`;
+html += `<tr class="highlight"><td style="text-align:left">Median (typical case)</td><td>${Math.round(median(reached))} ${unit} (${fmtDuration(median(durations))})</td></tr>`;
+html += `<tr><td style="text-align:left">Average</td><td>${Math.round(mean(reached))} ${unit} (${fmtDuration(mean(durations))})</td></tr>`;
+html += `<tr><td style="text-align:left">Slowest of those that reached it</td><td>${reached[reached.length-1]} ${unit} (${fmtDuration(durations[durations.length-1])})</td></tr>`;
+} else {
+html += `<tr><td style="text-align:left" colspan="2">0 of 500 runs reached ${params.target}× within ${params.cap} ${unit} — this edge/risk combination is too weak or the cap is too low.</td></tr>`;
+}
+document.getElementById('mc_batch_table').innerHTML = html;
+const note0 = document.getElementById('mc_batch_note');
+note0.style.display = reached.length>0 ? 'block' : 'none';
+note0.innerHTML = 'Duration estimates use your Time Estimate inputs, converted from trading days to calendar time.';
+return;
+}
+
+document.getElementById('mc_batch_title').textContent = '500-Simulation Summary';
+const peaks=results.map(r=>r.peak), troughs=results.map(r=>r.trough), finals=results.map(r=>r.final);
+const winStreaks=results.map(r=>r.bestWin), lossStreaks=results.map(r=>r.bestLoss);
+const drawdowns=results.map(r=>r.maxDD);
+const durationsAll=results.map(durationOf);
+const rows = [
+['Peak Equity', peaks, 'money', 'high-good'],
+['Trough Equity', troughs, 'money', 'high-good'],
+[isFixed?'Final Net P&L':'Final Equity', isFixed?finals.map(f=>f-params.start):finals, 'money', 'high-good'],
+['Max Drawdown', drawdowns, 'pct', 'high-bad'],
+['Best Win Streak', winStreaks, 'num', 'high-good'],
+['Worst Loss Streak', lossStreaks, 'num', 'high-bad'],
+['Estimated Duration', durationsAll, 'duration', 'high-bad']
+];
+let html = '<tr><th style="text-align:left">Metric (n=500 runs)</th><th>Worst Case</th><th class="highlight">Median (typical)</th><th>Average (mean)</th><th>Best Case</th></tr>';
+rows.forEach(([lab,arr,kind,dir])=>{
+const f = kind==='money' ? fmt$ : kind==='pct' ? (v=>fmtPct(v)) : kind==='duration' ? fmtDuration : (v=>v.toFixed(1));
+const sorted = [...arr].sort((a,b)=>a-b);
+const worst = dir==='high-bad' ? Math.max(...arr) : Math.min(...arr);
+const best = dir==='high-bad' ? Math.min(...arr) : Math.max(...arr);
+html += `<tr><td style="text-align:left">${lab}</td><td>${f(worst)}</td><td class="highlight">${f(median(sorted))}</td><td>${f(mean(arr))}</td><td>${f(best)}</td></tr>`;
+});
+document.getElementById('mc_batch_table').innerHTML = html;
+const note = document.getElementById('mc_batch_note');
+note.style.display = 'block';
+note.innerHTML =
+'Median is the better read for "what a typical run looks like." Compounding returns are right-skewed — a small ' +
+'number of lucky runs with early winning streaks compound to very large numbers and drag the Average upward, well ' +
+'above what most runs actually experience. The Average is still the right number if you specifically care about ' +
+'expected value across many possible timelines (e.g. running many separate accounts), just not "what will likely ' +
+'happen to me." For Max Drawdown and Estimated Duration, "Worst Case" and "Best Case" are flipped versus the equity ' +
+'rows — a bigger number is worse, not better.';
 }
 
 /* ============ MAX LOSS SIMULATOR ============ */
@@ -946,49 +1031,54 @@ document.getElementById('ml_risk').addEventListener('input',e=>{document.getElem
 let lastMaxLossParams = null;
 
 function runMaxLoss(skipRecompute){
-  let p,rr,risk,n,sims,maxDDs;
-  if(skipRecompute && lastMaxLossParams){
-    ({p,rr,risk,n,sims,maxDDs} = lastMaxLossParams);
-  } else {
-    p = parseFloat(document.getElementById('ml_p').value)/100;
-    rr = parseFloat(document.getElementById('ml_rr').value);
-    risk = parseFloat(document.getElementById('ml_risk').value)/100;
-    n = parseInt(document.getElementById('ml_n').value);
-    sims = parseInt(document.getElementById('ml_sims').value);
-    maxDDs = [];
-    for(let s=0;s<sims;s++){
-      let equity=1, peak=1, maxDD=0;
-      for(let i=0;i<n;i++){
-        const isWin = Math.random()<p;
-        equity *= isWin ? (1+rr*risk) : (1-risk);
-        peak = Math.max(peak, equity);
-        maxDD = Math.max(maxDD, (peak-equity)/peak);
-      }
-      maxDDs.push(maxDD);
-    }
-    maxDDs.sort((a,b)=>a-b);
-    lastMaxLossParams = {p,rr,risk,n,sims,maxDDs};
-  }
+let p,rr,risk,n,sims,maxDDs,finals;
+if(skipRecompute && lastMaxLossParams){
+({p,rr,risk,n,sims,maxDDs,finals} = lastMaxLossParams);
+} else {
+p = parseFloat(document.getElementById('ml_p').value)/100;
+rr = parseFloat(document.getElementById('ml_rr').value);
+risk = parseFloat(document.getElementById('ml_risk').value)/100;
+n = parseInt(document.getElementById('ml_n').value);
+sims = parseInt(document.getElementById('ml_sims').value);
+maxDDs = [];
+finals = [];
+for(let s=0;s<sims;s++){
+let equity=1, peak=1, maxDD=0;
+for(let i=0;i<n;i++){
+const isWin = Math.random()<p;
+equity *= isWin ? (1+rr*risk) : (1-risk);
+peak = Math.max(peak, equity);
+maxDD = Math.max(maxDD, (peak-equity)/peak);
+}
+maxDDs.push(maxDD);
+finals.push(equity);
+}
+maxDDs.sort((a,b)=>a-b);
+lastMaxLossParams = {p,rr,risk,n,sims,maxDDs,finals};
+}
 
-  const p50=percentile(maxDDs,0.5), p75=percentile(maxDDs,0.75), p90=percentile(maxDDs,0.9), p95=percentile(maxDDs,0.95), p99=percentile(maxDDs,0.99);
+const p50=percentile(maxDDs,0.5), p75=percentile(maxDDs,0.75), p90=percentile(maxDDs,0.9), p95=percentile(maxDDs,0.95), p99=percentile(maxDDs,0.99);
+const medianFinal = median([...finals].sort((a,b)=>a-b));
+const verdict = pnlVerdict(medianFinal-1);
 
-  document.getElementById('ml_stats').innerHTML = `
-    <div class="stat"><div class="label">Median Max DD</div><div class="value gold">${fmtPct(p50)}</div></div>
-    <div class="stat"><div class="label">75th Percentile</div><div class="value">${fmtPct(p75)}</div></div>
-    <div class="stat"><div class="label">90th Percentile</div><div class="value red">${fmtPct(p90)}</div></div>
-    <div class="stat"><div class="label">95th Percentile</div><div class="value red">${fmtPct(p95)}</div></div>
-    <div class="stat"><div class="label">99th (Worst-Case)</div><div class="value red">${fmtPct(p99)}</div></div>
-  `;
+document.getElementById('ml_stats').innerHTML = `
+<div class="stat"><div class="label">Conclusion (median over ${sims} runs)</div><div class="value ${verdict.cls}">${verdict.label}</div></div>
+<div class="stat"><div class="label">Median Max DD</div><div class="value gold">${fmtPct(p50)}</div></div>
+<div class="stat"><div class="label">75th Percentile</div><div class="value">${fmtPct(p75)}</div></div>
+<div class="stat"><div class="label">90th Percentile</div><div class="value red">${fmtPct(p90)}</div></div>
+<div class="stat"><div class="label">95th Percentile</div><div class="value red">${fmtPct(p95)}</div></div>
+<div class="stat"><div class="label">99th (Worst-Case)</div><div class="value red">${fmtPct(p99)}</div></div>
+`;
 
-  const nbins = 25;
-  const maxVal = Math.min(1, Math.max(...maxDDs)*1.05);
-  const binW = maxVal/nbins;
-  const counts = new Array(nbins).fill(0);
-  maxDDs.forEach(v=>{ let b=Math.floor(v/binW); if(b>=nbins)b=nbins-1; counts[b]++; });
-  const labels = counts.map((_,i)=> (i*binW*100).toFixed(0)+'%');
-  const colors = counts.map((_,i)=> (i*binW)>=p90 ? '#C13A28' : '#C9971F');
+const nbins = 25;
+const maxVal = Math.min(1, Math.max(...maxDDs)*1.05);
+const binW = maxVal/nbins;
+const counts = new Array(nbins).fill(0);
+maxDDs.forEach(v=>{ let b=Math.floor(v/binW); if(b>=nbins)b=nbins-1; counts[b]++; });
+const labels = counts.map((_,i)=> (i*binW*100).toFixed(0)+'%');
+const colors = counts.map((_,i)=> (i*binW)>=p90 ? '#C13A28' : '#C9971F');
 
-  drawBarChart(document.getElementById('ml_chart'), labels, counts, colors, {yFmt:v=>v.toFixed(0)});
+drawBarChart(document.getElementById('ml_chart'), labels, counts, colors, {yFmt:v=>v.toFixed(0)});
 }
 
 /* ============ KELLY SIMULATOR ============ */
@@ -997,43 +1087,48 @@ document.getElementById('k_b').addEventListener('input',e=>{document.getElementB
 document.getElementById('k_frac').addEventListener('input',e=>{document.getElementById('k_frac_val').textContent=e.target.value+'%';});
 
 function growthRate(p,b,r){
-  const q=1-p;
-  if(r<=0) return 0;
-  if(r>=1) return -Infinity;
-  return p*Math.log(1+b*r) + q*Math.log(1-r);
+const q=1-p;
+if(r<=0) return 0;
+if(r>=1) return -Infinity;
+return p*Math.log(1+b*r) + q*Math.log(1-r);
 }
 
 function runKelly(){
-  const p = parseFloat(document.getElementById('k_p').value)/100;
-  const b = parseFloat(document.getElementById('k_b').value);
-  const frac = parseFloat(document.getElementById('k_frac').value)/100;
-  const q = 1-p;
+const p = parseFloat(document.getElementById('k_p').value)/100;
+const b = parseFloat(document.getElementById('k_b').value);
+const frac = parseFloat(document.getElementById('k_frac').value)/100;
+const q = 1-p;
 
-  const fullKelly = p - q/b;
-  const usedKelly = fullKelly * frac;
+const fullKelly = p - q/b;
+const usedKelly = fullKelly * frac;
 
-  let zeroR = null;
-  for(let r=0.0001;r<0.999;r+=0.0005){
-    if(growthRate(p,b,r) < 0){ zeroR = r; break; }
-  }
-  const edgeR = p*b - q;
+let zeroR = null;
+for(let r=0.0001;r<0.999;r+=0.0005){
+if(growthRate(p,b,r) < 0){ zeroR = r; break; }
+}
+const edgeR = p*b - q;
 
-  document.getElementById('k_stats').innerHTML = `
-    <div class="stat"><div class="label">Edge per Trade</div><div class="value ${edgeR>0?'green':'red'}">${edgeR.toFixed(2)}R</div></div>
-    <div class="stat"><div class="label">Full Kelly %</div><div class="value gold">${fullKelly>0?fmtPct(fullKelly,2):'No edge'}</div></div>
-    <div class="stat"><div class="label">Your Fraction (${(frac*100).toFixed(0)}%) Kelly</div><div class="value">${usedKelly>0?fmtPct(usedKelly,2):'—'}</div></div>
-    <div class="stat"><div class="label">Zero-Growth Boundary</div><div class="value red">${zeroR? fmtPct(zeroR,2) : 'n/a'}</div></div>
-  `;
+const refTrades = 100;
+const totalReturnPct = usedKelly>0 ? Math.exp(growthRate(p,b,usedKelly)*refTrades)-1 : -1;
+const verdict = pnlVerdict(totalReturnPct);
 
-  const rs = [], gs = [];
-  const upper = Math.min(0.5,(zeroR||0.3)*1.6);
-  const steps = 120;
-  for(let i=0;i<=steps;i++){
-    const r = upper*i/steps;
-    rs.push(Math.round(r*1000)/10);
-    gs.push(growthRate(p,b,r));
-  }
-  drawLineChart(document.getElementById('k_chart'), gs, {color:'#C9971F', yFmt:v=>v.toFixed(2), xFmt:i=>rs[i]+'%'});
+document.getElementById('k_stats').innerHTML = `
+<div class="stat"><div class="label">Conclusion (${refTrades} trades @ your fraction)</div><div class="value ${verdict.cls}">${verdict.label}</div></div>
+<div class="stat"><div class="label">Edge per Trade</div><div class="value ${edgeR>0?'green':'red'}">${edgeR.toFixed(2)}R</div></div>
+<div class="stat"><div class="label">Full Kelly %</div><div class="value gold">${fullKelly>0?fmtPct(fullKelly,2):'No edge'}</div></div>
+<div class="stat"><div class="label">Your Fraction (${(frac*100).toFixed(0)}%) Kelly</div><div class="value">${usedKelly>0?fmtPct(usedKelly,2):'—'}</div></div>
+<div class="stat"><div class="label">Zero-Growth Boundary</div><div class="value red">${zeroR? fmtPct(zeroR,2) : 'n/a'}</div></div>
+`;
+
+const rs = [], gs = [];
+const upper = Math.min(0.5,(zeroR||0.3)*1.6);
+const steps = 120;
+for(let i=0;i<=steps;i++){
+const r = upper*i/steps;
+rs.push(Math.round(r*1000)/10);
+gs.push(growthRate(p,b,r));
+}
+drawLineChart(document.getElementById('k_chart'), gs, {color:'#C9971F', yFmt:v=>v.toFixed(2), xFmt:i=>rs[i]+'%'});
 }
 
 /* ============ RISK OF RUIN SIMULATOR ============ */
@@ -1042,90 +1137,91 @@ document.getElementById('r_x').addEventListener('input',e=>{document.getElementB
 document.getElementById('r_risk').addEventListener('input',e=>{document.getElementById('r_risk_val').textContent=parseFloat(e.target.value).toFixed(1)+'%';});
 
 function runRuin(){
-  const p = parseFloat(document.getElementById('r_p').value)/100;
-  const q = 1-p;
-  const X = parseInt(document.getElementById('r_x').value);
-  const N = parseInt(document.getElementById('r_n').value);
-  const risk = parseFloat(document.getElementById('r_risk').value)/100;
+const p = parseFloat(document.getElementById('r_p').value)/100;
+const q = 1-p;
+const X = parseInt(document.getElementById('r_x').value);
+const N = parseInt(document.getElementById('r_n').value);
+const risk = parseFloat(document.getElementById('r_risk').value)/100;
 
-  const prob = probStreakWithinN(q,X,N);
-  const ddAtStreak = 1 - Math.pow(1-risk, X);
+const prob = probStreakWithinN(q,X,N);
+const ddAtStreak = 1 - Math.pow(1-risk, X);
+const verdict = riskVerdict(ddAtStreak);
 
-  document.getElementById('r_stats').innerHTML = `
-    <div class="stat"><div class="label">P(≥${X} losses in a row within ${N} trades)</div><div class="value ${prob>0.5?'red':'gold'}">${fmtPct(prob)}</div></div>
-    <div class="stat"><div class="label">Drawdown if it Hits</div><div class="value red">${fmtPct(ddAtStreak)}</div></div>
-    <div class="stat"><div class="label">At Risk/Trade</div><div class="value">${fmtPct(risk)}</div></div>
-  `;
+document.getElementById('r_stats').innerHTML = `
+<div class="stat"><div class="label">Conclusion</div><div class="value ${verdict.cls}">${verdict.label}</div></div>
+<div class="stat"><div class="label">P(≥${X} losses in a row within ${N} trades)</div><div class="value ${prob>0.5?'red':'gold'}">${fmtPct(prob)}</div></div>
+<div class="stat"><div class="label">Drawdown if it Hits</div><div class="value red">${fmtPct(ddAtStreak)}</div></div>
+<div class="stat"><div class="label">At Risk/Trade</div><div class="value">${fmtPct(risk)}</div></div>
+`;
 
-  const winRates = [], probs = [], colors = [];
-  for(let wr=5;wr<=80;wr+=5){
-    winRates.push(wr+'%');
-    probs.push(probStreakWithinN(1-wr/100, X, N)*100);
-    colors.push(wr===Math.round(p*100) ? '#C9971F' : '#5B6472');
-  }
-  drawBarChart(document.getElementById('r_chart'), winRates, probs, colors, {yFmt:v=>v.toFixed(0)+'%'});
+const winRates = [], probs = [], colors = [];
+for(let wr=5;wr<=80;wr+=5){
+winRates.push(wr+'%');
+probs.push(probStreakWithinN(1-wr/100, X, N)*100);
+colors.push(wr===Math.round(p*100) ? '#C9971F' : '#5B6472');
+}
+drawBarChart(document.getElementById('r_chart'), winRates, probs, colors, {yFmt:v=>v.toFixed(0)+'%'});
 
-  const riskLevels = [0.25,0.5,1,2,3,5,7.5,10,15,20];
-  let html = '<tr><th style="text-align:left">Risk / Trade</th><th>Drawdown from '+X+'-Loss Streak</th><th>Verdict</th></tr>';
-  riskLevels.forEach(rl=>{
-    const r = rl/100;
-    const dd = 1-Math.pow(1-r,X);
-    let verdict, cls='';
-    if(dd<0.20){verdict='Survivable'; }
-    else if(dd<0.40){verdict='Painful, recoverable';}
-    else if(dd<0.60){verdict='Severe damage'; cls='highlight';}
-    else {verdict='Account-blowing'; cls='highlight';}
-    html += `<tr class="${cls}"><td style="text-align:left">${rl}%</td><td>${fmtPct(dd)}</td><td>${verdict}</td></tr>`;
-  });
-  document.getElementById('r_table').innerHTML = html;
+const riskLevels = [0.25,0.5,1,2,3,5,7.5,10,15,20];
+let html = '<tr><th style="text-align:left">Risk / Trade</th><th>Drawdown from '+X+'-Loss Streak</th><th>Verdict</th></tr>';
+riskLevels.forEach(rl=>{
+const r = rl/100;
+const dd = 1-Math.pow(1-r,X);
+let vd = riskVerdict(dd);
+let cls = (dd>=0.40) ? 'highlight' : '';
+html += `<tr class="${cls}"><td style="text-align:left">${rl}%</td><td>${fmtPct(dd)}</td><td>${vd.label}</td></tr>`;
+});
+document.getElementById('r_table').innerHTML = html;
 }
 
 /* ============ CONCURRENT POSITIONS RISK OF RUIN (Monte Carlo) ============ */
 document.getElementById('rc_rho').addEventListener('input',e=>{document.getElementById('rc_rho_val').textContent=e.target.value+'%';});
 
 function concurrentRuinProb(p, rho, K, rr, risk, N, threshold, sims){
-  let hits = 0;
-  for(let s=0;s<sims;s++){
-    let equity=1, peak=1, ruined=false;
-    for(let i=0;i<N;i++){
-      const outcomes = correlatedOutcomes(p, rho, K);
-      let sumR = 0;
-      outcomes.forEach(isWin=>{ sumR += isWin ? rr : -1; });
-      equity *= (1 + risk*sumR);
-      peak = Math.max(peak, equity);
-      const dd = (peak-equity)/peak;
-      if(dd >= threshold){ ruined = true; break; }
-    }
-    if(ruined) hits++;
-  }
-  return hits/sims;
+let hits = 0;
+for(let s=0;s<sims;s++){
+let equity=1, peak=1, ruined=false;
+for(let i=0;i<N;i++){
+const outcomes = correlatedOutcomes(p, rho, K);
+let sumR = 0;
+outcomes.forEach(isWin=>{ sumR += isWin ? rr : -1; });
+equity *= (1 + risk*sumR);
+peak = Math.max(peak, equity);
+const dd = (peak-equity)/peak;
+if(dd >= threshold){ ruined = true; break; }
+}
+if(ruined) hits++;
+}
+return hits/sims;
 }
 
 function runConcurrentRuin(){
-  const p = parseFloat(document.getElementById('r_p').value)/100;
-  const N = parseInt(document.getElementById('r_n').value);
-  const risk = parseFloat(document.getElementById('r_risk').value)/100;
-  const K = Math.max(1, parseInt(document.getElementById('rc_k').value)||1);
-  const rr = parseFloat(document.getElementById('rc_rr').value);
-  const rho = parseFloat(document.getElementById('rc_rho').value)/100;
-  const threshold = parseFloat(document.getElementById('rc_thresh').value)/100;
-  const SIMS = 2000;
+const p = parseFloat(document.getElementById('r_p').value)/100;
+const N = parseInt(document.getElementById('r_n').value);
+const risk = parseFloat(document.getElementById('r_risk').value)/100;
+const K = Math.max(1, parseInt(document.getElementById('rc_k').value)||1);
+const rr = parseFloat(document.getElementById('rc_rr').value);
+const rho = parseFloat(document.getElementById('rc_rho').value)/100;
+const threshold = parseFloat(document.getElementById('rc_thresh').value)/100;
+const SIMS = 2000;
 
-  document.getElementById('rc_wrap').style.display = 'block';
-  document.getElementById('rc_title').textContent =
-    `Concurrent Positions (K=${K}) — P(Drawdown ≥ ${(threshold*100).toFixed(0)}% within ${N} rounds)`;
+document.getElementById('rc_wrap').style.display = 'block';
+document.getElementById('rc_title').textContent =
+`Concurrent Positions (K=${K}) — P(Drawdown ≥ ${(threshold*100).toFixed(0)}% within ${N} rounds)`;
 
-  const pAtCurrentRho = concurrentRuinProb(p, rho, K, rr, risk, N, threshold, SIMS);
-  document.getElementById('rc_stats').innerHTML = `
-    <div class="stat"><div class="label">Aggregate Risk / Round (K × per-position risk)</div><div class="value">${fmtPct(K*risk)}</div></div>
-    <div class="stat"><div class="label">P(Ruin) at ${(rho*100).toFixed(0)}% Correlation</div><div class="value ${pAtCurrentRho>0.3?'red':'gold'}">${fmtPct(pAtCurrentRho)}</div></div>
-  `;
+const pAtCurrentRho = concurrentRuinProb(p, rho, K, rr, risk, N, threshold, SIMS);
+const verdict = probVerdict(pAtCurrentRho);
+document.getElementById('rc_stats').innerHTML = `
+<div class="stat"><div class="label">Conclusion</div><div class="value ${verdict.cls}">${verdict.label}</div></div>
+<div class="stat"><div class="label">Aggregate Risk / Round (K × per-position risk)</div><div class="value">${fmtPct(K*risk)}</div></div>
+<div class="stat"><div class="label">P(Ruin) at ${(rho*100).toFixed(0)}% Correlation</div><div class="value ${pAtCurrentRho>0.3?'red':'gold'}">${fmtPct(pAtCurrentRho)}</div></div>
+`;
 
-  const rhoLevels = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
-  const probs = rhoLevels.map(rh => concurrentRuinProb(p, rh, K, rr, risk, N, threshold, SIMS) * 100);
-  const labels = rhoLevels.map(rh => (rh*100).toFixed(0)+'%');
-  const colors = rhoLevels.map(rh => Math.abs(rh-rho) < 0.001 ? '#C9971F' : '#5B6472');
-  drawBarChart(document.getElementById('rc_chart'), labels, probs, colors, {yFmt:v=>v.toFixed(0)+'%'});
+const rhoLevels = [0, 0.2, 0.4, 0.6, 0.8, 1.0];
+const probs = rhoLevels.map(rh => concurrentRuinProb(p, rh, K, rr, risk, N, threshold, SIMS) * 100);
+const labels = rhoLevels.map(rh => (rh*100).toFixed(0)+'%');
+const colors = rhoLevels.map(rh => Math.abs(rh-rho) < 0.001 ? '#C9971F' : '#5B6472');
+drawBarChart(document.getElementById('rc_chart'), labels, probs, colors, {yFmt:v=>v.toFixed(0)+'%'});
 }
 
 /* ============ INITIAL RENDER ============ */
