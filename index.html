@@ -297,7 +297,7 @@ padding:20px;
 <div id="mc_percent_inputs" style="display:none;">
 <div class="field">
 <label>Risk per Trade <span class="val" id="mc_risk_val">1.0%</span></label>
-<input type="range" id="mc_risk" min="0.1" max="10" step="0.1" value="1.0">
+<input type="range" id="mc_risk" min="0.1" max="100" step="0.1" value="1.0">
 </div>
 <div class="field">
 <label>Reward:Risk (R multiple) <span class="val" id="mc_rr_val">3.0R</span></label>
@@ -955,7 +955,7 @@ totalPositions++;
 if(isWin){ winPositions++; sumR += rr; } else { sumR -= 1; }
 dollarDelta += (isWin?winAmt:lossAmt) + comm;
 });
-if(mode==='fixed'){ equity += dollarDelta; } else { equity *= (1 + risk*sumR - K*(chargePct||0)); }
+if(mode==='fixed'){ equity += dollarDelta; } else { equity = Math.max(0, equity * (1 + risk*sumR - K*(chargePct||0))); }
 roundsRun++;
 if(sumR>0){ curWinStreak++; curLossStreak=0; bestWin=Math.max(bestWin,curWinStreak); }
 else { curLossStreak++; curWinStreak=0; bestLoss=Math.max(bestLoss,curLossStreak); }
