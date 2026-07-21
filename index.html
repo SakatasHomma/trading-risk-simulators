@@ -450,6 +450,7 @@ total return over the n trades simulated.
 <label>Kelly Fraction Used <span class="val" id="k_frac_val">100%</span></label>
 <input type="range" id="k_frac" min="10" max="100" step="5" value="25">
 </div>
+<div class="field"><label>Trade Horizon (Trades)</label><input type="number" id="k_horizon" value="100" min="10"></div>
 <button class="btn" onclick="runKelly()">Calculate</button>
 <div class="note">Full Kelly maximizes long-run geometric growth but comes with brutal drawdowns. Most professional traders run at <strong>1/4 to 1/2 Kelly</strong> — the growth rate barely suffers, but the ride is far smoother.</div>
 </div>
@@ -459,9 +460,16 @@ total return over the n trades simulated.
 <b>What you're looking at:</b> the curve is your expected long-run compounding growth rate at each risk level.
 It peaks at Full Kelly %, and turns negative (losing money over time) past the Zero-Growth Boundary. Edge per
 Trade is your statistical advantage per trade in R-multiples — if it's negative, no position size saves you.
-Conclusion is a qualitative read on compounding at your chosen fraction of Kelly over a 100-trade horizon.
+Conclusion is a qualitative read on compounding at your chosen fraction of Kelly over your Trade Horizon. The
+Drawdown Comparison below simulates that same horizon many times at both Full Kelly and your chosen fraction,
+so you can see the volatility difference directly rather than just the growth-rate math.
 </div>
 <div class="stat-row" id="k_stats"></div>
+<div class="chart-wrap" id="k_dd_wrap" style="display:none;">
+<h3>Drawdown Comparison — Full Kelly vs. Your Fraction</h3>
+<table id="k_dd_table"></table>
+<div class="note" id="k_dd_note" style="margin-top:12px;"></div>
+</div>
 <div class="chart-wrap">
 <h3>Expected Geometric Growth Rate vs. Risk per Trade</h3>
 <canvas id="k_chart" data-h="340"></canvas>
@@ -1167,17 +1175,54 @@ if(growthRate(p,b,r) < 0){ zeroR = r; break; }
 }
 const edgeR = p*b - q;
 
-const refTrades = 100;
-const totalReturnPct = usedKelly>0 ? Math.exp(growthRate(p,b,usedKelly)*refTrades)-1 : -1;
+const horizon = Math.max(10, parseInt(document.getElementById('k_horizon').value)||100);
+const totalReturnPct = usedKelly>0 ? Math.exp(growthRate(p,b,usedKelly)*horizon)-1 : -1;
 const verdict = pnlVerdict(totalReturnPct);
 
 document.getElementById('k_stats').innerHTML = `
-<div class="stat"><div class="label">Conclusion (${refTrades} trades @ your fraction)</div><div class="value ${verdict.cls}">${verdict.label}</div></div>
+<div class="stat"><div class="label">Conclusion (${horizon} trades @ your fraction)</div><div class="value ${verdict.cls}">${verdict.label}</div></div>
 <div class="stat"><div class="label">Edge per Trade</div><div class="value ${edgeR>0?'green':'red'}">${edgeR.toFixed(2)}R</div></div>
 <div class="stat"><div class="label">Full Kelly %</div><div class="value gold">${fullKelly>0?fmtPct(fullKelly,2):'No edge'}</div></div>
 <div class="stat"><div class="label">Your Fraction (${(frac*100).toFixed(0)}%) Kelly</div><div class="value">${usedKelly>0?fmtPct(usedKelly,2):'—'}</div></div>
 <div class="stat"><div class="label">Zero-Growth Boundary</div><div class="value red">${zeroR? fmtPct(zeroR,2) : 'n/a'}</div></div>
 `;
+
+const ddWrap = document.getElementById('k_dd_wrap');
+if(fullKelly>0){
+const DD_SIMS = 2000;
+const simDrawdowns = (r)=>{
+const dds = [];
+for(let s=0;s<DD_SIMS;s++){
+let equity=1, peak=1, maxDD=0;
+for(let i=0;i<horizon;i++){
+const isWin = Math.random()<p;
+equity *= isWin ? (1+b*r) : (1-r);
+peak = Math.max(peak, equity);
+maxDD = Math.max(maxDD, (peak-equity)/peak);
+}
+dds.push(maxDD);
+}
+dds.sort((a,b)=>a-b);
+return dds;
+};
+const rFull = Math.min(fullKelly, 0.99);
+const rUsed = Math.min(Math.max(usedKelly,0), 0.99);
+const ddFull = simDrawdowns(rFull);
+const ddUsed = simDrawdowns(rUsed);
+const pRuinFull = ddFull.filter(d=>d>=0.5).length/DD_SIMS;
+const pRuinUsed = ddUsed.filter(d=>d>=0.5).length/DD_SIMS;
+ddWrap.style.display = 'block';
+document.getElementById('k_dd_table').innerHTML = `
+<tr><th style="text-align:left">Metric (${horizon} trades, ${DD_SIMS} paths)</th><th>Full Kelly</th><th class="highlight">Your Fraction</th></tr>
+<tr><td style="text-align:left">Risk per Trade</td><td>${fmtPct(rFull,2)}</td><td class="highlight">${fmtPct(rUsed,2)}</td></tr>
+<tr><td style="text-align:left">Median Max Drawdown</td><td>${fmtPct(median(ddFull))}</td><td class="highlight">${fmtPct(median(ddUsed))}</td></tr>
+<tr><td style="text-align:left">90th Percentile Max Drawdown</td><td>${fmtPct(percentile(ddFull,0.9))}</td><td class="highlight">${fmtPct(percentile(ddUsed,0.9))}</td></tr>
+<tr><td style="text-align:left">P(Drawdown ≥ 50% at some point)</td><td>${fmtPct(pRuinFull,0)}</td><td class="highlight">${fmtPct(pRuinUsed,0)}</td></tr>
+`;
+document.getElementById('k_dd_note').innerHTML = 'This is exactly why full Kelly is rarely used in practice: it maximizes long-run growth, but the drawdowns along the way are often severe enough that most traders cannot tolerate them financially or psychologically. A smaller fraction gives up comparatively little long-run growth for a meaningfully smoother ride.';
+} else {
+ddWrap.style.display = 'none';
+}
 
 const rs = [], gs = [];
 const upper = Math.min(0.5,(zeroR||0.3)*1.6);
