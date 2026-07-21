@@ -242,6 +242,8 @@ color:#C7CCD6;
 .audit h3{color:var(--gold-soft); font-size:13px; text-transform:uppercase; letter-spacing:1px; margin-top:22px;}
 .audit .ok{color:#5FAE85;}
 .audit .flag{color:#E0655A;}
+.audit b{color:var(--gold-soft);}
+.audit p{margin:0 0 10px 0;}
 footer{
 text-align:center;
 font-family:Arial,Helvetica,sans-serif;
@@ -266,6 +268,7 @@ padding:20px;
 <button data-panel="maxloss">Max Loss Simulator</button>
 <button data-panel="kelly">Kelly Size / Risk Simulator</button>
 <button data-panel="ruin">Risk of Ruin Simulator</button>
+<button data-panel="primer">Parameter Primer</button>
 </nav>
 
 <main>
@@ -525,6 +528,62 @@ correlated positions (100%) make K small trades behave exactly like one large tr
 <div class="stat-row" id="rc_stats"></div>
 <canvas id="rc_chart" data-h="300"></canvas>
 </div>
+</div>
+</div>
+</section>
+
+<!-- ================= PARAMETER PRIMER PANEL ================= -->
+<section class="panel" id="primer">
+<div class="card">
+<h2>Parameter Primer — Read This Before Using the Simulators</h2>
+<div class="audit">
+
+<h3>Core Concepts (Used Across All Four Tools)</h3>
+<p><b>Win Probability (p)</b> — The percentage of trades or positions that end as winners. Every simulator draws random outcomes from this probability; the realized win rate in any single run will drift above or below it just from chance, more so over fewer trades.</p>
+<p><b>Reward:Risk (R Multiple)</b> — How large a win is relative to a loss, in multiples of the amount risked. An R multiple of 3.0 means a win returns three times what a loss costs. This is the "b" in the Kelly formula.</p>
+<p><b>Risk per Trade (% of Equity)</b> — The fraction of current account equity placed at risk on each position — i.e. what you'd lose if the stop is hit. Higher risk per trade compounds faster when you're right, but produces sharper drawdowns when you're wrong.</p>
+<p><b>Fixed $ Sizing</b> — An alternative to % of Equity: every trade risks/returns a fixed dollar amount (Avg Win $, Avg Loss $, Commission $) regardless of how the account has grown or shrunk. Fits small accounts or fixed-lot strategies where size doesn't scale with equity.</p>
+<p><b>Concurrent Positions (K)</b> — How many positions open at the same time as a single "round." K=1 is the standard one-trade-at-a-time model; K&gt;1 models running several setups simultaneously.</p>
+<p><b>Correlation Between Positions (ρ)</b> — Only relevant when K&gt;1. 0% = the K positions are fully independent (diversification reduces risk). 100% = all K positions move together, behaving exactly like one trade sized at K times your per-position risk. Same-strategy, same-day positions are rarely near 0%.</p>
+<p><b>Charges per Trade (% of Equity mode)</b> — Round-trip trading cost (brokerage + STT + exchange/SEBI charges + stamp duty + GST) deducted from equity on every position, win or lose. Defaults to ≈0.08%, based on published Zerodha/Fyers discount-broker rates for intraday equity — adjust for delivery, F&amp;O, or a different broker.</p>
+<p><b>Conclusion / Verdict</b> — A one-line qualitative read on the specific result shown, so you don't have to eyeball raw numbers. Three different scales are used depending on what's being measured: <b>P&amp;L scale</b> (Monte Carlo, Max Loss, Kelly) runs Highly Profitable → Profitable → Mildly Profitable → Barely Breakeven → Breakeven → Loss-Making, based on the run's return. <b>Survivability scale</b> (Risk of Ruin) runs Survivable → Painful, Recoverable → Severe Damage → Account-Blowing, based on the drawdown a losing streak would produce. <b>Probability scale</b> (Concurrent Positions Risk of Ruin) runs Low Risk → Moderate Risk → High Risk → Extreme Risk, based on the probability of hitting your ruin threshold.</p>
+
+<h3>Monte Carlo Simulator</h3>
+<p><b>Starting Capital ($)</b> — The account size the run starts from, and the base every equity multiple or % return is measured against.</p>
+<p><b>Simulation Goal</b> — Fixed # of Trades runs a set number of trades/rounds and shows where the account ends up. Reach Target Multiple instead runs until the account hits a chosen multiple of starting capital (e.g. 2× = doubled) and reports how many trades that took.</p>
+<p><b>Number of Trades / Target Multiple / Max Trades Cap</b> — Under Fixed # of Trades, Number of Trades sets the run length. Under Reach Target Multiple, Target Multiple is the goal and Max Trades Cap is a safety limit so a run that never gets there doesn't loop forever.</p>
+<p><b>Trade Style (Time Estimate)</b> — Swing / Positional assumes multi-day holding periods (Avg Days Held, Idle Days) and spreads that workload into calendar time. Intraday instead assumes every position opens and closes the same day, capped by Max Intraday Trades per Day.</p>
+<p><b>Avg Days Held — Winners / Losers</b> — Swing/Positional only. Typical trading days a winning (or losing) position stays open — winners and losers often differ (e.g. letting winners run, cutting losers fast).</p>
+<p><b>Idle Days Between Rounds</b> — Swing/Positional only. Calendar gap between one round finishing and the next one starting.</p>
+<p><b>Max Intraday Trades per Day</b> — Intraday only. Caps how many rounds can realistically execute in one trading day, which drives how many calendar days the whole simulation takes.</p>
+<p><b>Estimated Duration</b> — How much real calendar time (weekends-only conversion, holidays ignored) the simulated trade count would take, given your Time Estimate inputs. Trade count alone says nothing about speed — this does.</p>
+<p><b>Final Net P&amp;L / Equity, Peak Equity, Trough Equity</b> — Where the account starts, the highest point it reached, and the lowest point it reached along the way.</p>
+<p><b>Max Drawdown</b> — The worst peak-to-trough decline experienced during this specific run, as a percentage.</p>
+<p><b>Realized Win Rate (per position)</b> — The win rate that actually happened in this particular random run — will differ from your Win Probability input by chance.</p>
+<p><b>Best Win Streak / Worst Loss Streak</b> — Longest consecutive run of winning (or losing) rounds during the simulation.</p>
+<p><b>500-Simulation Summary</b> — Runs 500 independent simulations and shows Worst / Median / Average / Best across all of them, since any single run is only one of countless possible paths. Median is the best read for "what a typical outcome looks like"; Average is skewed upward by rare lucky compounding streaks.</p>
+
+<h3>Max Loss Simulator</h3>
+<p><b>Number of Trades per Run</b> — How many trades make up one simulated equity path (a "run").</p>
+<p><b>Number of Simulated Runs</b> — How many independent random runs to generate — more runs gives a smoother, more reliable drawdown distribution at the cost of computation time.</p>
+<p><b>Median Max DD / 75th / 90th / 95th / 99th Percentile</b> — Sorted across all simulated runs: the median is the typical worst drawdown you'd experience; the 90th/95th/99th percentiles answer "in the worst 10% / 5% / 1% of outcomes, how deep did the drawdown get" — your genuine bad-luck scenario, not just the typical one.</p>
+
+<h3>Kelly Size / Risk Simulator</h3>
+<p><b>Kelly Fraction Used</b> — What fraction of the mathematically "full" Kelly bet size you actually use. Full Kelly (100%) maximizes long-run compounding growth but with brutal swings; most professional traders use a quarter to half Kelly, sacrificing very little growth for a much smoother ride.</p>
+<p><b>Edge per Trade</b> — Your statistical advantage per trade in R-multiples (win probability × reward, minus loss probability). If negative, no position size can make the system profitable — sizing only manages risk on an edge that already exists.</p>
+<p><b>Full Kelly %</b> — The risk-per-trade percentage that mathematically maximizes long-run compounding growth, given your win rate and reward:risk.</p>
+<p><b>Your Fraction (X%) Kelly</b> — Full Kelly scaled down by your chosen Kelly Fraction — the risk-per-trade percentage you'd actually use.</p>
+<p><b>Zero-Growth Boundary</b> — The risk-per-trade level beyond which expected long-run growth turns negative — betting too big on a real edge can still lose money over time.</p>
+
+<h3>Risk of Ruin Simulator</h3>
+<p><b>Consecutive Losses (X)</b> — The losing-streak length you want to stress-test (e.g. "8 losses in a row").</p>
+<p><b>Number of Trades (N)</b> — The trade horizon being checked for that losing streak occurring at least once.</p>
+<p><b>P(≥X losses in a row within N trades)</b> — The exact probability (via Markov-chain calculation) that a losing streak of at least length X happens somewhere within N trades, given your win rate.</p>
+<p><b>Drawdown if it Hits</b> — The equity drawdown that specific losing streak would produce at your chosen Risk per Trade — turns an abstract probability into a concrete "how much would I actually lose."</p>
+<p><b>Ruin = Drawdown of at Least (%)</b> — Concurrent Positions only. The drawdown threshold that counts as "ruin" for that Monte Carlo simulation (e.g. a 50% drawdown).</p>
+<p><b>Reward:Risk (R Multiple) — Concurrent Positions</b> — Same concept as elsewhere, used specifically for the K-position Monte Carlo, since the exact single-trade streak formula above doesn't need a payoff size.</p>
+<p><b>Aggregate Risk / Round</b> — K × your per-position risk — the total percentage of equity at stake in a single round when K positions are opened together.</p>
+
 </div>
 </div>
 </section>
