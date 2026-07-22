@@ -376,7 +376,10 @@ to hit your target — run 500 Simulations to see the typical (median) and best/
 this varies a lot run to run. <b>Estimated Duration</b> turns that trade count into real calendar time, using
 your Time Estimate inputs — this is what actually tells you "how many months/years" the system needs, since
 trade count alone says nothing about speed. <b>Conclusion</b> is a qualitative read on this run's annualized
-result (CAGR), from Highly Profitable down to Loss-Making.
+result (CAGR), from Highly Profitable down to Loss-Making. Running <b>500 Simulations</b> also replaces the panel
+and chart above with the median result across all 500 runs, plus a shaded 10th–90th percentile band on the chart
+showing how much a typical run's equity path actually varies — so what's shown up top always matches whichever
+button you last clicked, a single random path or the typical outcome across many.
 </div>
 <div class="stat-row" id="mc_stats"></div>
 <div class="chart-wrap">
@@ -615,7 +618,7 @@ redrawPanel(btn.dataset.panel);
 });
 
 function redrawPanel(panelId){
-if(panelId==='mc') runSingleMC();
+if(panelId==='mc') (mcLastMode==='batch' ? runBatchMC() : runSingleMC());
 else if(panelId==='maxloss') runMaxLoss(!!lastMaxLossParams);
 else if(panelId==='kelly') runKelly();
 else if(panelId==='ruin') runRuin();
@@ -843,6 +846,84 @@ ctx.fillText(lab, x, padT+plotH+8);
 });
 }
 
+/* Percentile bands (10th/50th/90th) across many equity paths, aligned by index.
+Paths of unequal length (e.g. Target Multiple mode, where faster/slower runs stop at different
+trade counts) are padded by holding the last equity value flat, so every path contributes a value
+at every index up to the longest run. */
+function computePercentileBands(paths){
+const maxLen = Math.max(...paths.map(p=>p.length));
+const padded = paths.map(p=>{
+if(p.length===maxLen) return p;
+const last = p[p.length-1];
+return p.concat(new Array(maxLen-p.length).fill(last));
+});
+const p10=[], p50=[], p90=[];
+for(let i=0;i<maxLen;i++){
+const vals = padded.map(p=>p[i]).sort((a,b)=>a-b);
+p10.push(percentile(vals,0.10));
+p50.push(percentile(vals,0.50));
+p90.push(percentile(vals,0.90));
+}
+return {p10,p50,p90};
+}
+
+function drawFanChart(canvas, bands, opts={}){
+const {ctx,w,h} = setupCanvas(canvas);
+ctx.clearRect(0,0,w,h);
+const color = opts.color || '#C9971F';
+const yFmt = opts.yFmt || (v=>v.toFixed(1));
+const xFmt = opts.xFmt || (i=>i);
+const padL = opts.padL || 68, padR = 16, padT = 14, padB = 30;
+const plotW = w-padL-padR, plotH = h-padT-padB;
+const n = bands.p50.length;
+if(n<2) return;
+const allVals = [...bands.p10, ...bands.p90];
+let minV = Math.min(...allVals), maxV = Math.max(...allVals);
+if(minV===maxV){ minV -= 1; maxV += 1; }
+const pad = (maxV-minV)*0.08;
+const yMin = minV-pad, yMax = maxV+pad;
+
+ctx.font = '10.5px Arial'; ctx.textBaseline = 'middle';
+const ySteps = 5;
+for(let i=0;i<=ySteps;i++){
+const v = yMin + (yMax-yMin)*i/ySteps;
+const y = padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
+ctx.strokeStyle = '#2A2F3B'; ctx.lineWidth = 1;
+ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(w-padR,y); ctx.stroke();
+ctx.fillStyle = '#5B6472'; ctx.textAlign = 'right';
+ctx.fillText(yFmt(v), padL-8, y);
+}
+
+const xToPx = i => padL + (i/(n-1))*plotW;
+const yToPx = v => padT + plotH - (v-yMin)/(yMax-yMin)*plotH;
+
+/* shaded band between the 10th and 90th percentile */
+ctx.beginPath();
+bands.p90.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+for(let i=n-1;i>=0;i--){ const x=xToPx(i), y=yToPx(bands.p10[i]); ctx.lineTo(x,y); }
+ctx.closePath();
+ctx.fillStyle = hexToRgba(color, 0.15); ctx.fill();
+
+/* thin boundary lines at p10/p90 */
+[bands.p10, bands.p90].forEach(series=>{
+ctx.beginPath();
+series.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+ctx.strokeStyle = hexToRgba(color,0.35); ctx.lineWidth=1; ctx.stroke();
+});
+
+/* bold median line on top */
+ctx.beginPath();
+bands.p50.forEach((v,i)=>{ const x=xToPx(i), y=yToPx(v); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+
+ctx.fillStyle = '#5B6472'; ctx.textAlign = 'center'; ctx.textBaseline='top';
+const xTicks = Math.min(8, n-1);
+for(let i=0;i<=xTicks;i++){
+const idx = Math.round(i/xTicks*(n-1));
+ctx.fillText(xFmt(idx), xToPx(idx), padT+plotH+8);
+}
+}
+
 window.addEventListener('resize', ()=>{
 clearTimeout(window._rzT);
 window._rzT = setTimeout(()=>{
@@ -886,6 +967,8 @@ document.getElementById('mc_n_label').textContent = K>1 ? 'Number of Rounds (of 
 document.getElementById('mc_cap_label').textContent = K>1 ? 'Max Rounds Cap (safety limit)' : 'Max Trades Cap (safety limit)';
 }
 updateMcKLabels();
+
+let mcLastMode = 'single'; // tracks whether the top panel/chart should reflect the last single run or the last 500-sim batch
 
 function mcParams(){
 const mode = document.querySelector('input[name="mc_mode"]:checked').value;
@@ -970,6 +1053,7 @@ return {path, final: equity, peak, trough, maxDD, winRate: winPositions/totalPos
 }
 
 function runSingleMC(skipDraw){
+mcLastMode = 'single';
 const params = mcParams();
 const r = simulateRun(params);
 const isFixed = params.mode==='fixed';
@@ -1012,6 +1096,7 @@ document.getElementById('mc_batch_wrap').style.display='none';
 }
 
 function runBatchMC(){
+mcLastMode = 'batch';
 const params = mcParams();
 const isFixed = params.mode==='fixed';
 const N_SIMS = 500;
@@ -1032,6 +1117,35 @@ const medianCagr = median([...cagrs].sort((a,b)=>a-b));
 const batchVerdict = pnlVerdict(medianCagr);
 document.getElementById('mc_batch_verdict_row').innerHTML =
 `<div class="stat"><div class="label">Conclusion (median annualized)</div><div class="value ${batchVerdict.cls}">${batchVerdict.label}</div></div>`;
+
+/* ---- Shared: populate the TOP summary panel + equity chart from all 500 runs, ----
+---- so the panel above never shows a stale single-run number after a batch run. ---- */
+const med = arr => median([...arr].sort((a,b)=>a-b));
+const peaksAll = results.map(r=>r.peak), troughsAll = results.map(r=>r.trough), finalsAll = results.map(r=>r.final);
+const winStreaksAll = results.map(r=>r.bestWin), lossStreaksAll = results.map(r=>r.bestLoss);
+const ddAll = results.map(r=>r.maxDD), winRatesAll = results.map(r=>r.winRate);
+const durAll = results.map(durationOf);
+const kStatTop = params.K>1
+? `<div class="stat"><div class="label">Aggregate Risk / Round (${params.K}×${fmtPct(params.risk)})</div><div class="value">${fmtPct(params.K*params.risk)}</div></div>`
+: '';
+const medFinal = med(finalsAll);
+document.getElementById('mc_stats').innerHTML = `
+<div class="stat"><div class="label">Conclusion (median of 500 sims)</div><div class="value ${batchVerdict.cls}">${batchVerdict.label}</div></div>
+<div class="stat"><div class="label">Estimated Duration (median)</div><div class="value gold">${fmtDuration(med(durAll))}</div></div>
+${kStatTop}
+<div class="stat"><div class="label">Final ${isFixed?'Net P&L':'Equity'} (median)</div><div class="value gold">${isFixed?fmt$(medFinal-params.start):fmt$(medFinal)}</div></div>
+<div class="stat"><div class="label">Peak Equity (median)</div><div class="value">${fmt$(med(peaksAll))}</div></div>
+<div class="stat"><div class="label">Trough Equity (median)</div><div class="value red">${fmt$(med(troughsAll))}</div></div>
+<div class="stat"><div class="label">Max Drawdown (median)</div><div class="value red">${fmtPct(med(ddAll))}</div></div>
+<div class="stat"><div class="label">Realized Win Rate (median)</div><div class="value">${fmtPct(med(winRatesAll))}</div></div>
+<div class="stat"><div class="label">Best Win Streak (median, ${unit})</div><div class="value green">${med(winStreaksAll).toFixed(1)}</div></div>
+<div class="stat"><div class="label">Worst Loss Streak (median, ${unit})</div><div class="value red">${med(lossStreaksAll).toFixed(1)}</div></div>
+`;
+const bands = computePercentileBands(results.map(r=>r.path));
+document.getElementById('mc_chart_title').textContent =
+`Equity Curve — 500 Simulations (Median line, 10th–90th Percentile Band)${params.K>1 ? ' — '+params.K+' concurrent positions/round' : ''}`;
+drawFanChart(document.getElementById('mc_chart'), bands, {color:'#C9971F', yFmt:v=>fmt$(v), xFmt:i=>i});
+/* ---- end shared block ---- */
 
 if(params.goal==='multiple'){
 document.getElementById('mc_batch_title').textContent = `500-Simulation Summary — ${unit[0].toUpperCase()+unit.slice(1)} to Reach ${params.target}×`;
