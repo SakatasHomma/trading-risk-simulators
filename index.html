@@ -301,7 +301,7 @@ padding:20px;
 </div>
 <div class="field">
 <label>Reward:Risk (R multiple) <span class="val" id="mc_rr_val">3.0R</span></label>
-<input type="range" id="mc_rr" min="0.5" max="10" step="0.5" value="3.0">
+<input type="range" id="mc_rr" min="0.5" max="50" step="0.5" value="3.0">
 </div>
 <div class="field">
 <label>Charges per Trade <span class="val" id="mc_charge_val">0.08%</span></label>
@@ -404,7 +404,7 @@ result (CAGR), from Highly Profitable down to Loss-Making.
 </div>
 <div class="field">
 <label>Reward:Risk (R multiple) <span class="val" id="ml_rr_val">3.0R</span></label>
-<input type="range" id="ml_rr" min="0.5" max="10" step="0.5" value="3.0">
+<input type="range" id="ml_rr" min="0.5" max="50" step="0.5" value="3.0">
 </div>
 <div class="field">
 <label>Risk per Trade <span class="val" id="ml_risk_val">1.0%</span></label>
@@ -444,7 +444,7 @@ total return over the n trades simulated.
 </div>
 <div class="field">
 <label>Reward:Risk (R multiple, b) <span class="val" id="k_b_val">3.0R</span></label>
-<input type="range" id="k_b" min="0.5" max="10" step="0.5" value="3.0">
+<input type="range" id="k_b" min="0.5" max="50" step="0.5" value="3.0">
 </div>
 <div class="field">
 <label>Kelly Fraction Used <span class="val" id="k_frac_val">100%</span></label>
@@ -494,14 +494,14 @@ so you can see the volatility difference directly rather than just the growth-ra
 <div class="field"><label>Number of Trades (N)</label><input type="number" id="r_n" value="100"></div>
 <div class="field">
 <label>Risk per Trade <span class="val" id="r_risk_val">1.0%</span></label>
-<input type="range" id="r_risk" min="0.1" max="10" step="0.1" value="1.0">
+<input type="range" id="r_risk" min="0.1" max="100" step="0.1" value="1.0">
 </div>
 <button class="btn" onclick="runRuin()">Calculate</button>
 <div class="note">"Risk of ruin" here = probability that a losing streak of length X occurs at least once within N trades (exact Markov-chain calculation, verified against 200,000-trial Monte Carlo), cross-referenced against the drawdown that streak would produce at your chosen risk per trade. This exact method assumes one trade at a time.</div>
 
 <h2 style="margin-top:26px;">Concurrent Positions</h2>
 <div class="field"><label>Concurrent Positions (K)</label><input type="number" id="rc_k" value="1" min="1" max="20"></div>
-<div class="field"><label>Reward:Risk (R multiple)</label><input type="range" id="rc_rr" min="0.5" max="10" step="0.5" value="4"></div>
+<div class="field"><label>Reward:Risk (R multiple)</label><input type="range" id="rc_rr" min="0.5" max="50" step="0.5" value="4"></div>
 <div class="field">
 <label>Correlation Between Positions <span class="val" id="rc_rho_val">0%</span></label>
 <input type="range" id="rc_rho" min="0" max="100" step="5" value="0">
@@ -1266,7 +1266,7 @@ colors.push(wr===Math.round(p*100) ? '#C9971F' : '#5B6472');
 }
 drawBarChart(document.getElementById('r_chart'), winRates, probs, colors, {yFmt:v=>v.toFixed(0)+'%'});
 
-const riskLevels = [0.25,0.5,1,2,3,5,7.5,10,15,20];
+const riskLevels = [0.25,0.5,1,2,3,5,7.5,10,15,20,30,40,50,75,100];
 let html = '<tr><th style="text-align:left">Risk / Trade</th><th>Drawdown from '+X+'-Loss Streak</th><th>Verdict</th></tr>';
 riskLevels.forEach(rl=>{
 const r = rl/100;
@@ -1289,7 +1289,7 @@ for(let i=0;i<N;i++){
 const outcomes = correlatedOutcomes(p, rho, K);
 let sumR = 0;
 outcomes.forEach(isWin=>{ sumR += isWin ? rr : -1; });
-equity *= (1 + risk*sumR);
+equity = Math.max(0, equity * (1 + risk*sumR));
 peak = Math.max(peak, equity);
 const dd = (peak-equity)/peak;
 if(dd >= threshold){ ruined = true; break; }
